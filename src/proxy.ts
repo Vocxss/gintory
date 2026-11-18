@@ -1,45 +1,26 @@
-import { NextResponse } from "next/server";
-import { auth } from "./app/api/[...nextauth]/route";
+import { getToken } from "next-auth/jwt"
+import type { NextRequest } from "next/server"
+import { NextResponse } from "next/server"
 
-export default auth((req) => {
-  const session = req.auth;
+export async function proxy(req: NextRequest) {
+  const token = await getToken({
+    req,
+    secret: process.env.AUTH_SECRET,
+  })
 
-  if (!session) {
-    return NextResponse.redirect(new URL("/login", req.url));
+  if (!token) {
+    const loginUrl = new URL("/login", req.url)
+    loginUrl.searchParams.set("callbackUrl", req.nextUrl.pathname)
+    return NextResponse.redirect(loginUrl)
   }
 
-  const pathname = req.nextUrl.pathname;
-  const role = session.user?.role;
-
-  const allowedRoutes: Record<string, string[]> = {
-    admin: ["/admin"],
-    gintory_manager: [
-      "/admin/dashboard",
-      "/admin/products",
-      "/admin/categories",
-      "/admin/restock-orders",
-      "/admin/transactions",
-    ],
-    gintory_staff: [
-      "/admin/dashboard",
-      "/admin/products",
-      "/admin/transactions",
-    ],
-    supplier: ["/admin/dashboard", "/admin/restock-orders"],
-  };
-
-  if (
-    pathname.startsWith("/admin") &&
-    !allowedRoutes[role ?? ""]?.some((route) =>
-      pathname === route || pathname.startsWith(`${route}/`),
-    )
-  ) {
-    return NextResponse.redirect(new URL("/403", req.url));
+  if (req.nextUrl.pathname.startsWith("/admin") && token.role !== "admin") {
+    return NextResponse.redirect(new URL("/dashboard", req.url))
   }
 
-  return NextResponse.next();
-});
+  return NextResponse.next()
+}
 
 export const config = {
-  matcher: ["/", "/admin/:path*", "/dashboard/:path*"],
-};
+  matcher: ["/dashboard/:path*", "/admin/:path*"],
+}
