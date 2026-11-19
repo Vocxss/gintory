@@ -1,10 +1,10 @@
+import { pool } from "@/lib/pool";
+import type { IUserRow } from "@/lib/types/database";
+import { loginSchema } from "@/lib/validations/auth";
 import bcrypt from "bcrypt";
 import type { NextAuthConfig } from "next-auth";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { pool } from "@/lib/db";
-import type { IUserRow } from "@/lib/types/database";
-import { loginSchema } from "@/lib/validations/auth";
 
 const authOptions = {
   providers: [

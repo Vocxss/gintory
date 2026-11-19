@@ -1,9 +1,9 @@
+import { pool } from "@/lib/pool";
+import type { IUserRow } from "@/lib/types/database";
+import { errorResponse, successResponse } from "@/lib/utils/apiResponse";
+import { registerSchema } from "@/lib/validations/auth";
 import bcrypt from "bcrypt";
 import { type NextRequest, NextResponse } from "next/server";
-import { errorResponse, successResponse } from "@/lib/utils/apiResponse";
-import { pool } from "@/lib/db";
-import type { IUserRow } from "@/lib/types/database";
-import { registerSchema } from "@/lib/validations/auth";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
