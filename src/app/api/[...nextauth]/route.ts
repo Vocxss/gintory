@@ -1,8 +1,10 @@
-import { pool } from "@/lib/db";
-import { loginSchema } from "@/lib/validations/auth";
 import bcrypt from "bcrypt";
+import type { NextAuthConfig } from "next-auth";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { pool } from "@/lib/db";
+import type { IUserRow } from "@/lib/types/database";
+import { loginSchema } from "@/lib/validations/auth";
 
 const authOptions = {
   providers: [
@@ -18,21 +20,42 @@ const authOptions = {
 
         const { email, password } = parsed.data;
 
-        const {rows} = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-        if (rows.length == 0) return null;
+        const { rows } = await pool.query<
+          Pick<
+            IUserRow,
+            | "id"
+            | "full_name"
+            | "email"
+            | "password"
+            | "role"
+            | "company_name"
+            | "supplier_status"
+          >
+        >(
+          "SELECT id, full_name, email, password, role, company_name, supplier_status FROM users WHERE email = $1",
+          [email],
+        );
+        if (rows.length === 0) return null;
 
         const checked = await bcrypt.compare(password, rows[0].password);
         if (!checked) return null;
 
-        const {rows: users} = await pool.query('SELECT u.id, u.full_name, u.role FROM users u WHERE u.id = $1', [rows[0].user_id]);
-        if (users.length == 0) return null;
-
-        const user = users[0];
+        const user = rows[0];
+        if (
+          user.role === "supplier" &&
+          (user.supplier_status === "Pending" ||
+            user.supplier_status === "Rejected")
+        ) {
+          return null;
+        }
 
         return {
           id: user.id,
-          name: user.name,
+          name: user.full_name,
+          email: user.email,
           role: user.role,
+          company_name: user.company_name,
+          supplier_status: user.supplier_status,
         };
       },
     }),
@@ -42,13 +65,17 @@ const authOptions = {
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.company_name = user.company_name;
+        token.supplier_status = user.supplier_status;
       }
       return token;
     },
     async session({ session, token }) {
-      if (session.user) {
+      if (session.user && token.id && token.role) {
         session.user.id = token.id;
         session.user.role = token.role;
+        session.user.company_name = token.company_name;
+        session.user.supplier_status = token.supplier_status;
       }
       return session;
     },
@@ -57,8 +84,8 @@ const authOptions = {
   pages: {
     signIn: "/login",
   },
-};
+} satisfies NextAuthConfig;
 
-export const {handlers, signIn, signOut, auth } = NextAuth(authOptions);
+export const { handlers, signIn, signOut, auth } = NextAuth(authOptions);
 
 export const { GET, POST } = handlers;
