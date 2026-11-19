@@ -90,7 +90,6 @@ export interface ITransactionItemRow {
   quantity: number;
 }
 
-// Joined & computed view models for UI / API responses
 export type SafeUser = Omit<IUserRow, 'password_hash'>;
 
 export interface IProductWithDetails extends IProductRow {

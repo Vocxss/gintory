@@ -1,6 +1,7 @@
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 CREATE TYPE user_role AS ENUM ('admin', 'gintory_manager', 'gintory_staff', 'supplier');
+CREATE TYPE category_type AS ENUM ('accessory', 'decoration', 'furniture');
 CREATE TYPE supplier_status AS ENUM ('Pending', 'Approved', 'Rejected');
 CREATE TYPE restock_status AS ENUM ('Pending', 'Confirmed', 'Rejected', 'In Transit', 'Received');
 CREATE TYPE transaction_type AS ENUM ('INCOMING', 'OUTGOING');
@@ -27,6 +28,7 @@ CREATE TABLE categories (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(100) UNIQUE NOT NULL,
     description TEXT NOT NULL,
+    type category_type NOT NULL,
     image_url TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
