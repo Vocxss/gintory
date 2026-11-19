@@ -14,21 +14,12 @@ export async function proxy(req: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  if (req.nextUrl.pathname.startsWith("/login") && token.role) {
+  if (req.nextUrl.pathname.startsWith("/login") || req.nextUrl.pathname.startsWith("/register") && token.role) {
     return NextResponse.redirect(new URL("/dashboard", req.url))
   }
-
-  if (req.nextUrl.pathname.startsWith("/dashboard") && token.role === "admin") {
-    return NextResponse.redirect(new URL("/admin/dashboard", req.url))
-  }
-
-  if (req.nextUrl.pathname.startsWith("/admin") && token.role !== "admin") {
-    return NextResponse.redirect(new URL("/dashboard", req.url))
-  }
-
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*"],
+  matcher: ["/dashboard/:path*"],
 }
