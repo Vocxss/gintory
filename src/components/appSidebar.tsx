@@ -11,7 +11,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-  useSidebar
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { UserRole } from "@/lib/types/database";
 import {
@@ -21,8 +21,7 @@ import {
   Invoice01Icon,
   LogOutIcon,
   PackageMoving01Icon,
-  Store04Icon,
-  UsersRoundIcon
+  UsersRoundIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { signOut } from "next-auth/react";
@@ -42,7 +41,7 @@ const navItems = [
     url: "/dashboard",
     icon: <HugeiconsIcon icon={DashboardSquare01Icon} />,
     isActive: false,
-    roles: ["admin", "gintory_manager", "gintory_staff", "supplier"],
+    roles: ["admin", "manager", "staff", "supplier"],
   },
   {
     title: "Daftar Pengguna",
@@ -62,7 +61,7 @@ const navItems = [
       },
       {
         title: "Supplier",
-        url: "/admin/products",
+        url: "/users/supplier",
         isActive: false,
       },
     ],
@@ -72,51 +71,53 @@ const navItems = [
     title: "Daftar Produk",
     url: "/products",
     icon: <HugeiconsIcon icon={BoxIcon} />,
-    roles: ["admin", "gintory_manager", "gintory_staff"],
+    roles: ["admin", "manager", "staff"],
     isActive: false,
     items: [
       {
         title: "Aksesoris",
         url: "/products/accessories",
-        isActive: false
+        isActive: false,
       },
       {
         title: "Dekorasi",
         url: "/products/decorations",
-        isActive: false
+        isActive: false,
       },
       {
         title: "Perabotan",
         url: "/products/furniture",
-        isActive: false
+        isActive: false,
       },
     ],
   },
   {
     title: "Pesanan Restock",
-    url: "/admin/restock-orders",
+    url: "/restock-orders",
     icon: <HugeiconsIcon icon={PackageMoving01Icon} />,
-    roles: ["admin", "gintory_manager", "supplier"],
+    roles: ["admin", "manager", "staff", "supplier"],
     isActive: false,
   },
   {
     title: "Transaksi",
-    url: "/admin/transactions",
+    url: "/transactions",
     icon: <HugeiconsIcon icon={Invoice01Icon} />,
-    roles: ["admin", "gintory_manager", "gintory_staff"],
-    isActive: false,
-  },
-  {
-    title: "Supplier",
-    url: "/admin/suppliers",
-    icon: <HugeiconsIcon icon={Store04Icon} />,
-    roles: ["admin"],
+    roles: ["admin", "manager", "staff"],
     isActive: false,
   },
 ];
 
+const roleBasePaths: Record<UserRole, string> = {
+  admin: "/admin",
+  manager: "/manager",
+  staff: "/staf",
+  supplier: "/supplier",
+  gintory_manager: "/manager",
+  gintory_staff: "/staf",
+};
+
 export function AppSidebar({ sessionRole }: { sessionRole: UserRole }) {
-  const { open } = useSidebar()
+  const { open } = useSidebar();
   const router = useRouter();
   const pathname = usePathname();
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
@@ -125,33 +126,46 @@ export function AppSidebar({ sessionRole }: { sessionRole: UserRole }) {
     setOpenItems((current) =>
       navItems.reduce<Record<string, boolean>>((next, item) => {
         if (item.items) {
+          const basePath = roleBasePaths[sessionRole];
           next[item.title] =
-            item.items.some((subItem) => pathname === subItem.url) ||
+            item.items.some(
+              (subItem) => pathname === `${basePath}${subItem.url}`,
+            ) ||
             (current[item.title] ?? false);
         }
         return next;
       }, {}),
     );
-  }, [pathname]);
+  }, [pathname, sessionRole]);
 
   const filteredNavItems = navItems
     .filter((item) => {
       return item.roles.includes(sessionRole.toLowerCase() as UserRole);
     })
-    .map((item) => ({
-      ...item,
-      isActive: pathname === item.url,
-      items: item.items?.map((subItem) => ({
-        ...subItem,
-        isActive: pathname === subItem.url,
-      })),
-    }));
+    .map((item) => {
+      const basePath = roleBasePaths[sessionRole];
+      const itemUrl = `${basePath}${item.url}`;
+      return {
+        ...item,
+        url: itemUrl,
+        isActive: pathname === itemUrl,
+        items: item.items?.map((subItem) => {
+          const subItemUrl = `${basePath}${subItem.url}`;
+          return {
+            ...subItem,
+            url: subItemUrl,
+            isActive: pathname === subItemUrl,
+          };
+        }),
+      };
+    });
 
   return (
     <Sidebar variant="inset" collapsible="icon">
       <SidebarHeader>
         <div className="flex items-center gap-4">
           <Image
+            loading="eager"
             src={"/logotypo.webp"}
             width={300}
             height={300}
@@ -198,7 +212,7 @@ export function AppSidebar({ sessionRole }: { sessionRole: UserRole }) {
                     >
                       <HugeiconsIcon
                         icon={ChevronRightIcon}
-                        className={`size-4 transition-transform duration-200 ${openItems[item.title] ? 'rotate-90' : ''}`}
+                        className={`size-4 transition-transform duration-200 ${openItems[item.title] ? "rotate-90" : ""}`}
                       />
                     </CollapsibleTrigger>
                   </div>

@@ -263,9 +263,9 @@ function SidebarTrigger({
     <Button
       data-sidebar="trigger"
       data-slot="sidebar-trigger"
-      variant="ghost"
+      variant="outline"
       size="icon-sm"
-      className={"hover:text-primary cursor-pointer"}
+      className={"cursor-pointer"}
       onClick={(event) => {
         onClick?.(event)
         toggleSidebar()

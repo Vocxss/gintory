@@ -1,4 +1,10 @@
-export type UserRole = 'admin' | 'manager' | 'staff' | 'supplier';
+export type UserRole =
+  | 'admin'
+  | 'manager'
+  | 'staff'
+  | 'supplier'
+  | 'gintory_manager'
+  | 'gintory_staff';
 export type SupplierStatus = 'Pending' | 'Approved' | 'Rejected';
 export type RestockStatus = 'Pending' | 'Confirmed' | 'Rejected' | 'In Transit' | 'Received';
 export type TransactionType = 'INCOMING' | 'OUTGOING';
