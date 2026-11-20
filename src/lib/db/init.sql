@@ -1,6 +1,6 @@
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
-CREATE TYPE user_role AS ENUM ('admin', 'gintory_manager', 'gintory_staff', 'supplier');
+CREATE TYPE user_role AS ENUM ('admin', 'manager', 'staff', 'supplier');
 CREATE TYPE category_type AS ENUM ('accessory', 'decoration', 'furniture');
 CREATE TYPE supplier_status AS ENUM ('Pending', 'Approved', 'Rejected');
 CREATE TYPE restock_status AS ENUM ('Pending', 'Confirmed', 'Rejected', 'In Transit', 'Received');
