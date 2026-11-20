@@ -1,6 +1,6 @@
-import { pool } from "@/lib/pool";
 import type { IUserRow } from "@/lib/types/database";
 import { errorResponse, successResponse } from "@/lib/utils/apiResponse";
+import { pool } from "@/lib/utils/pool";
 import { registerSchema } from "@/lib/validations/auth";
 import bcrypt from "bcrypt";
 import { type NextRequest, NextResponse } from "next/server";

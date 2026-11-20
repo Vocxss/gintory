@@ -1,12 +1,12 @@
-import { pool } from "@/lib/pool";
 import { errorResponse, successResponse } from "@/lib/utils/apiResponse";
 import { requireRole } from "@/lib/utils/authGuard";
+import { pool } from "@/lib/utils/pool";
 
 export async function GET() {
   const access = await requireRole([
     "admin",
-    "gintory_manager",
-    "gintory_staff",
+    "manager",
+    "staff",
     "supplier",
   ]);
   if ("response" in access) return access.response;
@@ -14,7 +14,7 @@ export async function GET() {
   try {
     if (
       access.user.role === "admin" ||
-      access.user.role === "gintory_manager"
+      access.user.role === "manager"
     ) {
       const [stock, criticalProducts, pendingTransactions, pendingSuppliers] =
         await Promise.all([
@@ -58,7 +58,7 @@ export async function GET() {
       });
     }
 
-    if (access.user.role === "gintory_staff") {
+    if (access.user.role === "staff") {
       const [pendingTransactions, readyToShip, availableOrders] =
         await Promise.all([
           pool.query<{ count: number }>(

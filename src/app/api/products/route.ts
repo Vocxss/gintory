@@ -1,4 +1,3 @@
-import { pool } from "@/lib/pool";
 import {
     errorResponse,
     getPagination,
@@ -6,13 +5,14 @@ import {
     successResponse,
 } from "@/lib/utils/apiResponse";
 import { requireRole } from "@/lib/utils/authGuard";
+import { pool } from "@/lib/utils/pool";
 import { productSchema } from "@/lib/validations/product";
 
 export async function GET(request: Request) {
   const access = await requireRole([
     "admin",
-    "gintory_manager",
-    "gintory_staff",
+    "manager",
+    "staff",
   ]);
   if ("response" in access) return access.response;
 
@@ -80,7 +80,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const access = await requireRole(["admin", "gintory_manager"]);
+  const access = await requireRole(["admin", "manager"]);
   if ("response" in access) return access.response;
 
   const parsed = productSchema.safeParse(await request.json());

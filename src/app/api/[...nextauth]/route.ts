@@ -1,5 +1,5 @@
-import { pool } from "@/lib/pool";
 import type { IUserRow } from "@/lib/types/database";
+import { pool } from "@/lib/utils/pool";
 import { loginSchema } from "@/lib/validations/auth";
 import bcrypt from "bcrypt";
 import type { NextAuthConfig } from "next-auth";
@@ -15,6 +15,8 @@ const authOptions = {
         password: {},
       },
       async authorize(credential) {
+        
+
         const parsed = loginSchema.safeParse(credential);
         if (!parsed.success) return null;
 

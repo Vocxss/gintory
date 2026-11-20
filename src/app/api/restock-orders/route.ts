@@ -1,18 +1,18 @@
-import { pool } from "@/lib/pool";
 import {
     errorResponse,
     getPagination,
     successResponse,
 } from "@/lib/utils/apiResponse";
 import { requireRole } from "@/lib/utils/authGuard";
-import { makeDocumentNumber } from "@/lib/utils/database";
+import { pool } from "@/lib/utils/pool";
+import { makeDocumentNumber } from "@/lib/utils/transaction";
 import { restockSchema } from "@/lib/validations/restock";
 
 export async function GET(request: Request) {
   const access = await requireRole([
     "admin",
-    "gintory_manager",
-    "gintory_staff",
+    "manager",
+    "staff",
     "supplier",
   ]);
   if ("response" in access) return access.response;
@@ -29,74 +29,8 @@ export async function GET(request: Request) {
     addFilter("ro.supplier_id = ?", access.user.id);
   }
 
-  export async function POST(request: Request) {
-    const access = await requireRole(["gintory_manager"]);
-    if ("response" in access) return access.response;
-
-    const parsed = restockSchema.safeParse(await request.json());
-    if (!parsed.success) {
-      return errorResponse(
-        "Data restock order tidak valid",
-        400,
-        parsed.error.flatten().fieldErrors,
-      );
-    }
-
-    const { supplier_id, order_date, expected_delivery_date, notes, items } =
-      parsed.data;
-
-    try {
-      const supplier = await pool.query<{ id: string }>(
-        "SELECT id FROM users WHERE id = $1 AND role = 'supplier' AND supplier_status = 'Approved'",
-        [supplier_id],
-      );
-      if (supplier.rowCount === 0) {
-        return errorResponse("Supplier belum berstatus Approved", 400);
-      }
-
-      const poNumber = makeDocumentNumber("PO", order_date);
-      const client = await pool.connect();
-      await client.query("BEGIN");
-      try {
-        const restock = await client.query(
-          `INSERT INTO restock_orders
-            (po_number, supplier_id, created_by, order_date,
-             expected_delivery_date, notes, status)
-           VALUES ($1, $2, $3, $4, $5, $6, 'Pending')
-           RETURNING *`,
-          [
-            poNumber,
-            supplier_id,
-            access.user.id,
-            order_date,
-            expected_delivery_date,
-            notes ?? null,
-          ],
-        );
-
-        await client.query(
-          `INSERT INTO restock_order_items
-            (restock_order_id, product_id, quantity)
-           SELECT $1, item.product_id, item.quantity
-             FROM jsonb_to_recordset($2::jsonb)
-               AS item(product_id uuid, quantity integer)`,
-          [restock.rows[0].id, JSON.stringify(items)],
-        );
-        await client.query("COMMIT");
-        return successResponse(restock.rows[0], "Restock order berhasil dibuat", 201);
-      } catch (error) {
-        await client.query("ROLLBACK");
-        throw error;
-      } finally {
-        client.release();
-      }
-    } catch (error) {
-      console.error(error);
-      return errorResponse("Gagal membuat restock order", 500);
-    }
-  }
   if (searchParams.get("available_for_incoming") === "true") {
-    if (access.user.role !== "gintory_staff") {
+    if (access.user.role !== "staff") {
       return errorResponse("Filter ini hanya tersedia untuk staff", 403);
     }
     conditions.push(
@@ -164,4 +98,71 @@ export async function GET(request: Request) {
     total,
     totalPages: Math.ceil(total / limit),
   });
+}
+
+export async function POST(request: Request) {
+  const access = await requireRole(["manager"]);
+  if ("response" in access) return access.response;
+
+  const parsed = restockSchema.safeParse(await request.json());
+  if (!parsed.success) {
+    return errorResponse(
+      "Data restock order tidak valid",
+      400,
+      parsed.error.flatten().fieldErrors,
+    );
+  }
+
+  const { supplier_id, order_date, expected_delivery_date, notes, items } =
+    parsed.data;
+
+  try {
+    const supplier = await pool.query<{ id: string }>(
+      "SELECT id FROM users WHERE id = $1 AND role = 'supplier' AND supplier_status = 'Approved'",
+      [supplier_id],
+    );
+    if (supplier.rowCount === 0) {
+      return errorResponse("Supplier belum berstatus Approved", 400);
+    }
+
+    const poNumber = makeDocumentNumber("PO", order_date);
+    const client = await pool.connect();
+    await client.query("BEGIN");
+    try {
+      const restock = await client.query(
+        `INSERT INTO restock_orders
+          (po_number, supplier_id, created_by, order_date,
+           expected_delivery_date, notes, status)
+         VALUES ($1, $2, $3, $4, $5, $6, 'Pending')
+         RETURNING *`,
+        [
+          poNumber,
+          supplier_id,
+          access.user.id,
+          order_date,
+          expected_delivery_date,
+          notes ?? null,
+        ],
+      );
+
+      await client.query(
+        `INSERT INTO restock_order_items
+          (restock_order_id, product_id, quantity)
+         SELECT $1, item.product_id, item.quantity
+           FROM jsonb_to_recordset($2::jsonb)
+             AS item(product_id uuid, quantity integer)`,
+        [restock.rows[0].id, JSON.stringify(items)],
+      );
+      await client.query("COMMIT");
+      return successResponse(restock.rows[0], "Restock order berhasil dibuat", 201);
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error(error);
+    return errorResponse("Gagal membuat restock order", 500);
+  }
 }

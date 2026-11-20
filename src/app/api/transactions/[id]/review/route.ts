@@ -1,13 +1,13 @@
-import { pool } from "@/lib/pool";
 import { errorResponse, successResponse } from "@/lib/utils/apiResponse";
 import { requireRole } from "@/lib/utils/authGuard";
-import { runTransaction } from "@/lib/utils/database";
+import { pool } from "@/lib/utils/pool";
+import { runTransaction } from "@/lib/utils/transaction";
 import { transactionReviewSchema } from "@/lib/validations/transaction";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function PATCH(request: Request, context: RouteContext) {
-  const access = await requireRole(["gintory_manager"]);
+  const access = await requireRole(["manager"]);
   if ("response" in access) return access.response;
 
   const { id } = await context.params;

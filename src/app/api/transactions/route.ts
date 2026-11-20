@@ -1,12 +1,12 @@
-import { pool } from "@/lib/pool";
 import { getPagination, successResponse } from "@/lib/utils/apiResponse";
 import { requireRole } from "@/lib/utils/authGuard";
+import { pool } from "@/lib/utils/pool";
 
 export async function GET(request: Request) {
   const access = await requireRole([
     "admin",
-    "gintory_manager",
-    "gintory_staff",
+    "manager",
+    "staff",
   ]);
   if ("response" in access) return access.response;
 

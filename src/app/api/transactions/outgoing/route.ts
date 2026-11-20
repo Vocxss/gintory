@@ -1,11 +1,11 @@
-import { pool } from "@/lib/pool";
 import { errorResponse, isPostgresError, successResponse } from "@/lib/utils/apiResponse";
 import { requireRole } from "@/lib/utils/authGuard";
-import { makeDocumentNumber, runTransaction } from "@/lib/utils/database";
+import { pool } from "@/lib/utils/pool";
+import { makeDocumentNumber, runTransaction } from "@/lib/utils/transaction";
 import { outgoingTransactionSchema } from "@/lib/validations/transaction";
 
 export async function POST(request: Request) {
-  const access = await requireRole(["gintory_staff"]);
+  const access = await requireRole(["staff"]);
   if ("response" in access) return access.response;
 
   const parsed = outgoingTransactionSchema.safeParse(await request.json());

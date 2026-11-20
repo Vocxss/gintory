@@ -1,15 +1,15 @@
-import { pool } from "@/lib/pool";
 import { errorResponse, successResponse } from "@/lib/utils/apiResponse";
 import { requireRole } from "@/lib/utils/authGuard";
+import { pool } from "@/lib/utils/pool";
 
 export async function GET(request: Request) {
-  const access = await requireRole(["admin", "gintory_manager"]);
+  const access = await requireRole(["admin", "manager"]);
   if ("response" in access) return access.response;
 
   const { searchParams } = new URL(request.url);
   const requestedStatus = searchParams.get("status");
   if (
-    access.user.role === "gintory_manager" &&
+    access.user.role === "manager" &&
     requestedStatus !== "Approved"
   ) {
     return errorResponse(

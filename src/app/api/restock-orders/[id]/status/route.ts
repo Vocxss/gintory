@@ -1,12 +1,12 @@
-import { pool } from "@/lib/pool";
 import { errorResponse, successResponse } from "@/lib/utils/apiResponse";
 import { requireRole } from "@/lib/utils/authGuard";
+import { pool } from "@/lib/utils/pool";
 import { restockStatusSchema } from "@/lib/validations/restock";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function PATCH(request: Request, context: RouteContext) {
-  const access = await requireRole(["gintory_manager"]);
+  const access = await requireRole(["manager"]);
   if ("response" in access) return access.response;
 
   const { id } = await context.params;

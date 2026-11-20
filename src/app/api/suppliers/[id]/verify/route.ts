@@ -1,6 +1,6 @@
-import { pool } from "@/lib/pool";
 import { errorResponse, successResponse } from "@/lib/utils/apiResponse";
 import { requireRole } from "@/lib/utils/authGuard";
+import { pool } from "@/lib/utils/pool";
 import { supplierStatusSchema } from "@/lib/validations/supplier";
 
 type RouteContext = { params: Promise<{ id: string }> };

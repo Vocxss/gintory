@@ -1,16 +1,16 @@
-import { pool } from "@/lib/pool";
 import {
     errorResponse,
     isPostgresError,
     successResponse,
 } from "@/lib/utils/apiResponse";
 import { requireRole } from "@/lib/utils/authGuard";
+import { pool } from "@/lib/utils/pool";
 import { productSchema, productUpdateSchema } from "@/lib/validations/product";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function PATCH(request: Request, context: RouteContext) {
-  const access = await requireRole(["admin", "gintory_manager"]);
+  const access = await requireRole(["admin", "manager"]);
   if ("response" in access) return access.response;
 
   const { id } = await context.params;
@@ -77,7 +77,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 }
 
 export async function DELETE(request: Request, context: RouteContext) {
-  const access = await requireRole(["admin", "gintory_manager"]);
+  const access = await requireRole(["admin", "manager"]);
   if ("response" in access) return access.response;
 
   const { id } = await context.params;
