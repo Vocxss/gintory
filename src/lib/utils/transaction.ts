@@ -20,6 +20,10 @@ export function makeDocumentNumber(
   date: string,
 ) {
   const compactDate = date.replaceAll("-", "");
-  const random = crypto.randomUUID().replaceAll("-", "").slice(0, 4).toUpperCase();
+  const random = crypto
+    .randomUUID()
+    .replaceAll("-", "")
+    .slice(0, 4)
+    .toUpperCase();
   return `${prefix}-${compactDate}-${random}`;
 }

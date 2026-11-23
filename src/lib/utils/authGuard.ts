@@ -1,6 +1,6 @@
 import { auth } from "@/app/api/[...nextauth]/route";
-import { errorResponse } from "@/lib/utils/apiResponse";
 import type { UserRole } from "@/lib/types/database";
+import { errorResponse } from "@/lib/utils/apiResponse";
 
 export async function requireRole(allowedRoles: UserRole[]) {
   const session = await auth();
