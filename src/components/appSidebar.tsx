@@ -1,6 +1,22 @@
 "use client";
 
 import {
+  DashboardSquare01Icon,
+  DeliveryBox02Icon,
+  DeliveryReturn02Icon,
+  Invoice01Icon,
+  LogOutIcon,
+  NotificationIcon,
+  Store01Icon,
+  TagsIcon,
+  UsersRoundIcon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
+import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -8,155 +24,84 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { UserRole } from "@/lib/types/database";
-import {
-  BoxIcon,
-  ChevronRightIcon,
-  DashboardSquare01Icon,
-  Invoice01Icon,
-  LogOutIcon,
-  PackageMoving01Icon,
-  UsersRoundIcon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { signOut } from "next-auth/react";
-import Image from "next/image";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "./ui/collapsible";
+import type { UserRole } from "@/lib/types/database";
 
 const navItems = [
   {
     title: "Dashboard",
     url: "/dashboard",
     icon: <HugeiconsIcon icon={DashboardSquare01Icon} />,
-    isActive: false,
     roles: ["admin", "manager", "staff", "supplier"],
   },
   {
-    title: "Daftar Pengguna",
+    title: "Kelola Produk",
+    url: "/products",
+    icon: <HugeiconsIcon icon={DeliveryBox02Icon} />,
+    roles: ["admin", "manager"],
+  },
+  {
+    title: "Kelola Kategori",
+    url: "/categories",
+    icon: <HugeiconsIcon icon={TagsIcon} />,
+    roles: ["admin", "manager"],
+  },
+  {
+    title: "Verifikasi Supplier",
+    url: "/suppliers",
+    icon: <HugeiconsIcon icon={Store01Icon} />,
+    roles: ["admin"],
+  },
+  {
+    title: "Kelola Pengguna",
     url: "/users",
     icon: <HugeiconsIcon icon={UsersRoundIcon} />,
     roles: ["admin"],
-    items: [
-      {
-        title: "Manajer",
-        url: "/users/managers",
-        isActive: false,
-      },
-      {
-        title: "Staf",
-        url: "/users/staff",
-        isActive: false,
-      },
-      {
-        title: "Supplier",
-        url: "/users/supplier",
-        isActive: false,
-      },
-    ],
-    isActive: false,
-  },
-  {
-    title: "Daftar Produk",
-    url: "/products",
-    icon: <HugeiconsIcon icon={BoxIcon} />,
-    roles: ["admin", "manager", "staff"],
-    isActive: false,
-    items: [
-      {
-        title: "Aksesoris",
-        url: "/products/accessories",
-        isActive: false,
-      },
-      {
-        title: "Dekorasi",
-        url: "/products/decorations",
-        isActive: false,
-      },
-      {
-        title: "Perabotan",
-        url: "/products/furniture",
-        isActive: false,
-      },
-    ],
   },
   {
     title: "Pesanan Restock",
     url: "/restock-orders",
-    icon: <HugeiconsIcon icon={PackageMoving01Icon} />,
-    roles: ["admin", "manager", "staff", "supplier"],
-    isActive: false,
+    icon: <HugeiconsIcon icon={DeliveryReturn02Icon} />,
+    roles: ["manager", "staff", "supplier"],
   },
   {
     title: "Transaksi",
     url: "/transactions",
     icon: <HugeiconsIcon icon={Invoice01Icon} />,
-    roles: ["admin", "manager", "staff"],
-    isActive: false,
+    roles: ["admin", "manager", "staff", "supplier"],
+  },
+  {
+    title: "Notifikasi",
+    url: "/notifications",
+    icon: <HugeiconsIcon icon={NotificationIcon} />,
+    roles: ["admin", "manager", "staff", "supplier"],
   },
 ];
 
-const roleBasePaths: Record<UserRole, string> = {
+const roleBasePaths = {
   admin: "/admin",
   manager: "/manager",
-  staff: "/staf",
+  staff: "/staff",
   supplier: "/supplier",
-  gintory_manager: "/manager",
-  gintory_staff: "/staf",
 };
 
 export function AppSidebar({ sessionRole }: { sessionRole: UserRole }) {
   const { open } = useSidebar();
   const router = useRouter();
   const pathname = usePathname();
-  const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    setOpenItems((current) =>
-      navItems.reduce<Record<string, boolean>>((next, item) => {
-        if (item.items) {
-          const basePath = roleBasePaths[sessionRole];
-          next[item.title] =
-            item.items.some(
-              (subItem) => pathname === `${basePath}${subItem.url}`,
-            ) ||
-            (current[item.title] ?? false);
-        }
-        return next;
-      }, {}),
-    );
-  }, [pathname, sessionRole]);
+  const basePath = roleBasePaths[sessionRole];
 
   const filteredNavItems = navItems
-    .filter((item) => {
-      return item.roles.includes(sessionRole.toLowerCase() as UserRole);
-    })
+    .filter((item) => item.roles.includes(sessionRole))
     .map((item) => {
-      const basePath = roleBasePaths[sessionRole];
       const itemUrl = `${basePath}${item.url}`;
+      const isActive =
+        pathname === itemUrl || pathname.startsWith(`${itemUrl}/`);
       return {
         ...item,
         url: itemUrl,
-        isActive: pathname === itemUrl,
-        items: item.items?.map((subItem) => {
-          const subItemUrl = `${basePath}${subItem.url}`;
-          return {
-            ...subItem,
-            url: subItemUrl,
-            isActive: pathname === subItemUrl,
-          };
-        }),
+        isActive,
       };
     });
 
@@ -166,14 +111,14 @@ export function AppSidebar({ sessionRole }: { sessionRole: UserRole }) {
         <div className="flex items-center gap-4">
           <Image
             loading="eager"
-            src={"/logotypo.webp"}
+            src="/logotypo.webp"
             width={300}
             height={300}
             alt="Gintory Logo"
             className={`w-24 object-cover ${open ? "block" : "hidden"}`}
           />
           <Image
-            src={"/logo.webp"}
+            src="/logo.webp"
             width={300}
             height={300}
             alt="Gintory Logo"
@@ -182,69 +127,19 @@ export function AppSidebar({ sessionRole }: { sessionRole: UserRole }) {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarMenu className="gap-4">
-          {filteredNavItems.map((item) =>
-            item.items ? (
-              <SidebarMenuItem key={item.title}>
-                <Collapsible
-                  open={openItems[item.title] ?? false}
-                  onOpenChange={(open) =>
-                    setOpenItems((current) => ({
-                      ...current,
-                      [item.title]: open,
-                    }))
-                  }
-                  className="group/collapsible"
-                >
-                  <div className="flex items-center gap-1">
-                    <SidebarMenuButton
-                      className="flex-1"
-                      isActive={item.isActive}
-                      tooltip={item.title}
-                      render={<Link href={item.url} />}
-                    >
-                      {item.icon}
-                      <span>{item.title}</span>
-                    </SidebarMenuButton>
-                    <CollapsibleTrigger
-                      aria-label={`Buka submenu ${item.title}`}
-                      className="flex size-9 items-center justify-center rounded-lg text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring group-data-[collapsible=icon]:hidden"
-                    >
-                      <HugeiconsIcon
-                        icon={ChevronRightIcon}
-                        className={`size-4 transition-transform duration-200 ${openItems[item.title] ? "rotate-90" : ""}`}
-                      />
-                    </CollapsibleTrigger>
-                  </div>
-                  <CollapsibleContent className={"mt-2"}>
-                    <SidebarMenuSub>
-                      {item.items.map((subItem) => (
-                        <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuSubButton
-                            isActive={subItem.isActive}
-                            render={<Link href={subItem.url} />}
-                          >
-                            <span>{subItem.title}</span>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ))}
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </Collapsible>
-              </SidebarMenuItem>
-            ) : (
-              <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton
-                  tooltip={item.title}
-                  isActive={item.isActive}
-                  render={<Link href={item.url} />}
-                >
-                  {item.icon}
-                  <span>{item.title}</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ),
-          )}
+        <SidebarMenu className="gap-2">
+          {filteredNavItems.map((item) => (
+            <SidebarMenuItem key={item.title}>
+              <SidebarMenuButton
+                tooltip={item.title}
+                isActive={item.isActive}
+                render={<Link href={item.url} />}
+              >
+                {item.icon}
+                <span>{item.title}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter>
@@ -254,7 +149,7 @@ export function AppSidebar({ sessionRole }: { sessionRole: UserRole }) {
               className="text-destructive hover:bg-destructive/10 hover:text-destructive"
               tooltip="Logout"
               onClick={async () => {
-                await signOut();
+                await signOut({ redirect: false });
                 router.push("/login");
               }}
             >
