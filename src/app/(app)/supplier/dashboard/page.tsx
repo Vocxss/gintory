@@ -1,5 +1,7 @@
-function SupplierDashboardPage() {
-  return <div />;
-}
+"use client";
 
-export default SupplierDashboardPage;
+import { RoleDashboard } from "@/components/admin/roleDashboard";
+
+export default function SupplierDashboardPage() {
+  return <RoleDashboard dashboardRole="supplier" />;
+}

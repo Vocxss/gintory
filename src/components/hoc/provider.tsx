@@ -1,11 +1,13 @@
 "use client";
 
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "../ui/toast";
 
 export function Provider({ children }: { children: React.ReactNode }) {
+  const queryClient = new QueryClient();
   return (
     <NextThemesProvider
       attribute="class"
@@ -15,8 +17,10 @@ export function Provider({ children }: { children: React.ReactNode }) {
       disableTransitionOnChange
     >
       <SessionProvider refetchInterval={5 * 60}>
-        <TooltipProvider>{children}</TooltipProvider>
-        <Toaster />
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>{children}</TooltipProvider>
+          <Toaster />
+        </QueryClientProvider>
       </SessionProvider>
     </NextThemesProvider>
   );

@@ -1,5 +1,7 @@
-function ManagerDashboardPage() {
-  return <div />;
-}
+"use client";
 
-export default ManagerDashboardPage;
+import { RoleDashboard } from "@/components/admin/roleDashboard";
+
+export default function ManagerDashboardPage() {
+  return <RoleDashboard dashboardRole="manager" />;
+}

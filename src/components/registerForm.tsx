@@ -1,9 +1,16 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cn } from "cn";
-import { Eye, EyeClosed } from "lucide-react";
+import {
+  Building2,
+  Eye,
+  EyeClosed,
+  LockKeyhole,
+  Mail,
+  UserRound,
+} from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import type * as z from "zod";
@@ -21,20 +28,20 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { registerSchema } from "@/lib/validations/auth";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from "./ui/input-group";
+} from "./ui/inputGroup";
 import { Spinner } from "./ui/spinner";
 import { toast } from "./ui/toast";
 
 export function RegisterForm({ ...props }) {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof registerSchema>>({
     resolver: zodResolver(registerSchema),
@@ -74,7 +81,7 @@ export function RegisterForm({ ...props }) {
         });
         setIsLoading(false);
 
-        redirect("/login");
+        router.push("/login");
       }
     } catch (error) {
       console.error(error);
@@ -103,14 +110,18 @@ export function RegisterForm({ ...props }) {
                 render={({ field, fieldState }) => (
                   <Field>
                     <FieldLabel htmlFor="full_name">Nama Lengkap</FieldLabel>
-                    <Input
-                      {...field}
-                      id="full_name"
-                      type="text"
-                      placeholder="Gibran Rakabuming Raka"
-                      autoComplete="off"
-                      required
-                    />
+                    <InputGroup>
+                      <InputGroupAddon align="inline-start">
+                        <UserRound />
+                      </InputGroupAddon>
+                      <InputGroupInput
+                        {...field}
+                        id="full_name"
+                        placeholder="Gibran Rakabuming Raka"
+                        autoComplete="name"
+                        required
+                      />
+                    </InputGroup>
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}
@@ -123,14 +134,19 @@ export function RegisterForm({ ...props }) {
                 render={({ field, fieldState }) => (
                   <Field>
                     <FieldLabel htmlFor="email">Email</FieldLabel>
-                    <Input
-                      {...field}
-                      id="email"
-                      type="text"
-                      placeholder="gibranxgaming@gmail.com"
-                      autoComplete="off"
-                      required
-                    />
+                    <InputGroup>
+                      <InputGroupAddon align="inline-start">
+                        <Mail />
+                      </InputGroupAddon>
+                      <InputGroupInput
+                        {...field}
+                        id="email"
+                        type="email"
+                        placeholder="gibranxgaming@gmail.com"
+                        autoComplete="email"
+                        required
+                      />
+                    </InputGroup>
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}
@@ -145,14 +161,18 @@ export function RegisterForm({ ...props }) {
                     <FieldLabel htmlFor="company_name">
                       Nama Perusahaan
                     </FieldLabel>
-                    <Input
-                      {...field}
-                      id="company_name"
-                      type="text"
-                      placeholder="PT. Gibran Rakabuming Raka"
-                      autoComplete="off"
-                      required
-                    />
+                    <InputGroup>
+                      <InputGroupAddon align="inline-start">
+                        <Building2 />
+                      </InputGroupAddon>
+                      <InputGroupInput
+                        {...field}
+                        id="company_name"
+                        placeholder="PT. Gibran Rakabuming Raka"
+                        autoComplete="organization"
+                        required
+                      />
+                    </InputGroup>
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}
@@ -166,6 +186,9 @@ export function RegisterForm({ ...props }) {
                   <Field>
                     <FieldLabel htmlFor="password">Password</FieldLabel>
                     <InputGroup>
+                      <InputGroupAddon align="inline-start">
+                        <LockKeyhole />
+                      </InputGroupAddon>
                       <InputGroupInput
                         {...field}
                         id="password"
@@ -189,7 +212,7 @@ export function RegisterForm({ ...props }) {
                 )}
               />
               <Field>
-                <Button disabled={isLoading ? true : false} type="submit">
+                <Button disabled={isLoading} type="submit">
                   {isLoading ? <Spinner /> : "Daftar"}
                 </Button>
                 <p className="text-sm text-center text-muted-foreground">
