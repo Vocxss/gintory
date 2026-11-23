@@ -1,4 +1,5 @@
 "use client";
+
 import { AppSidebar } from "@/components/appSidebar";
 import { Blobatar } from "@/components/ui/blobatar";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdownMenu";
 import {
   SidebarInset,
   SidebarProvider,
@@ -21,22 +22,22 @@ import {
 import {
   CheckIcon,
   ChevronDownIcon,
+  LogOutIcon,
   Moon02Icon,
-  NotificationIcon,
   PaletteIcon,
   SunIcon,
-  User02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import "blobatar/motion.css";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const { resolvedTheme, setTheme } = useTheme();
+  const router = useRouter();
 
   const themes = [
     {
@@ -55,11 +56,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!resolvedTheme) return;
-
-    document.documentElement.classList.toggle(
-      "dark",
-      resolvedTheme === "dark",
-    );
+    document.documentElement.classList.toggle("dark", resolvedTheme === "dark");
   }, [resolvedTheme]);
 
   const changeTheme = (themeName: "light" | "dark") => {
@@ -68,51 +65,38 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   };
 
   if (!session) {
-    return;
+    return <main className="mx-2 mt-4">{children}</main>;
   }
 
   return (
     <SidebarProvider>
-      <AppSidebar sessionRole={session?.user?.role ?? "staff"} />
-      <SidebarInset>
-        <div className="flex items-center justify-between">
+      <AppSidebar sessionRole={session.user.role} />
+      <SidebarInset className="min-w-0 overflow-x-hidden">
+        <div className="flex items-center justify-between border-b border-border pb-2">
           <SidebarTrigger />
           <div className="flex items-center gap-4">
-            <Button variant="outline" size={"icon-sm"}>
-              <Link
-                href={`/notifications/${session?.user?.id}`}
-                className="text-sm font-bold"
-              >
-                <HugeiconsIcon icon={NotificationIcon} />
-              </Link>
-            </Button>
-            <div className="flex items-center gap-2 p-2 pr-4 border border-border bg-card rounded-full">
-              <Blobatar name={"kasper"} />
+            <div className="flex items-center gap-2 rounded-full border border-border bg-card p-1 px-2">
+              <Blobatar name={session.user.name ?? "gintory"} />
               <div className="flex flex-col">
-                <p className="text-xs text-primary">{session?.user?.role}</p>
-                <p className="text-sm font-bold">{session?.user?.name}</p>
+                <p className="text-xs capitalize text-primary">
+                  {session.user.role}
+                </p>
+                <p className="text-sm font-bold">{session.user.name}</p>
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={
-                    <Button variant="ghost" size={"icon-sm"}>
+                    <Button variant="ghost" size="icon-xs">
                       <HugeiconsIcon icon={ChevronDownIcon} />
                     </Button>
                   }
-                ></DropdownMenuTrigger>
+                />
                 <DropdownMenuContent>
                   <DropdownMenuGroup>
-                    <DropdownMenuItem>
-                      <Link
-                        href={`/profile/${session.user.id}`}
-                        className="flex items-center gap-2"
-                      >
-                        <HugeiconsIcon icon={User02Icon} />
-                        <p>Profile</p>
-                      </Link>
-                    </DropdownMenuItem>
                     <DropdownMenuSub>
-                      <DropdownMenuSubTrigger><HugeiconsIcon icon={PaletteIcon}/> Tema</DropdownMenuSubTrigger>
+                      <DropdownMenuSubTrigger>
+                        <HugeiconsIcon icon={PaletteIcon} /> Tema
+                      </DropdownMenuSubTrigger>
                       <DropdownMenuPortal>
                         <DropdownMenuSubContent>
                           {themes.map((theme) => (
@@ -123,20 +107,34 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                               {theme.icon}
                               <span className="ml-2">{theme.label}</span>
                               {theme.isActive && (
-                                <HugeiconsIcon icon={CheckIcon} className="ml-auto" />
+                                <HugeiconsIcon
+                                  icon={CheckIcon}
+                                  className="ml-auto"
+                                />
                               )}
                             </DropdownMenuItem>
                           ))}
                         </DropdownMenuSubContent>
                       </DropdownMenuPortal>
                     </DropdownMenuSub>
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        await signOut({ redirect: false });
+                        router.push("/login");
+                      }}
+                    >
+                      <HugeiconsIcon icon={LogOutIcon} />
+                      <span>Logout</span>
+                    </DropdownMenuItem>
                   </DropdownMenuGroup>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           </div>
         </div>
-        <main>{children}</main>
+        <main className="mx-2 mt-4 min-w-0 max-w-full overflow-x-hidden pb-8">
+          {children}
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );
