@@ -1,7 +1,7 @@
 import {
-    errorResponse,
-    isPostgresError,
-    successResponse,
+  errorResponse,
+  isPostgresError,
+  successResponse,
 } from "@/lib/utils/apiResponse";
 import { requireRole } from "@/lib/utils/authGuard";
 import { pool } from "@/lib/utils/pool";

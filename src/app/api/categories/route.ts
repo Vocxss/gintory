@@ -9,11 +9,7 @@ import { pool } from "@/lib/utils/pool";
 import { categorySchema } from "@/lib/validations/category";
 
 export async function GET(request: Request) {
-  const access = await requireRole([
-    "admin",
-    "manager",
-    "staff",
-  ]);
+  const access = await requireRole(["admin", "manager", "staff"]);
   if ("response" in access) return access.response;
 
   const { page, limit, offset } = getPagination(request);

@@ -1,5 +1,10 @@
-import { errorResponse, isPostgresError, successResponse } from "@/lib/utils/apiResponse";
+import {
+  errorResponse,
+  isPostgresError,
+  successResponse,
+} from "@/lib/utils/apiResponse";
 import { requireRole } from "@/lib/utils/authGuard";
+import { notifyRole } from "@/lib/utils/notify";
 import { pool } from "@/lib/utils/pool";
 import { makeDocumentNumber, runTransaction } from "@/lib/utils/transaction";
 import { outgoingTransactionSchema } from "@/lib/validations/transaction";
@@ -10,13 +15,22 @@ export async function POST(request: Request) {
 
   const parsed = outgoingTransactionSchema.safeParse(await request.json());
   if (!parsed.success) {
-    return errorResponse("Data transaksi outgoing tidak valid", 400, parsed.error.flatten().fieldErrors);
+    return errorResponse(
+      "Data transaksi outgoing tidak valid",
+      400,
+      parsed.error.flatten().fieldErrors,
+    );
   }
 
   const client = await pool.connect();
   try {
     const result = await runTransaction(client, async () => {
-      const insufficient: Array<{ product_id: string; name: string; requested: number; available: number }> = [];
+      const insufficient: Array<{
+        product_id: string;
+        name: string;
+        requested: number;
+        available: number;
+      }> = [];
 
       for (const item of parsed.data.items) {
         const product = await client.query(
@@ -63,6 +77,13 @@ export async function POST(request: Request) {
              AS item(product_id uuid, quantity integer)`,
         [created.rows[0].id, JSON.stringify(parsed.data.items)],
       );
+      await notifyRole({
+        client,
+        role: "manager",
+        title: "Pengajuan Barang Keluar",
+        message: `Pengajuan ${created.rows[0].transaction_number} untuk ${parsed.data.customer_name} menunggu persetujuan.`,
+        link: `/manager/transactions/${created.rows[0].id}`,
+      });
       return created.rows[0];
     });
     return successResponse(result, "Transaksi outgoing berhasil dibuat", 201);

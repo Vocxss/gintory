@@ -1,27 +1,24 @@
 import {
-    errorResponse,
-    getPagination,
-    isPostgresError,
-    successResponse,
+  errorResponse,
+  getPagination,
+  isPostgresError,
+  successResponse,
 } from "@/lib/utils/apiResponse";
 import { requireRole } from "@/lib/utils/authGuard";
 import { pool } from "@/lib/utils/pool";
 import { productSchema } from "@/lib/validations/product";
 
 export async function GET(request: Request) {
-  const access = await requireRole([
-    "admin",
-    "manager",
-    "staff",
-  ]);
+  const access = await requireRole(["admin", "manager", "staff"]);
   if ("response" in access) return access.response;
 
   const { page, limit, offset, searchParams } = getPagination(request);
   const conditions: string[] = [];
   const values: unknown[] = [];
   const search = searchParams.get("search")?.trim();
-  const categoryId = searchParams.get("category_id");
-  const stockStatus = searchParams.get("stock_status");
+  const categoryId = searchParams.get("category_id")?.trim();
+  const supplierId = searchParams.get("supplier_id")?.trim();
+  const stockStatus = searchParams.get("stock_status")?.trim();
 
   if (search) {
     values.push(`%${search}%`);
@@ -32,6 +29,10 @@ export async function GET(request: Request) {
   if (categoryId) {
     values.push(categoryId);
     conditions.push(`p.category_id = $${values.length}`);
+  }
+  if (supplierId) {
+    values.push(supplierId);
+    conditions.push(`p.supplier_id = $${values.length}`);
   }
   if (
     stockStatus &&
@@ -57,6 +58,7 @@ export async function GET(request: Request) {
   const total = Number(countResult.rows[0]?.total ?? 0);
   const result = await pool.query(
     `SELECT p.*, c.name AS category_name,
+            COALESCE(u.company_name, u.full_name) AS supplier_company,
        CASE
          WHEN p.current_stock = 0 THEN 'Out of Stock'
          WHEN p.current_stock <= p.min_stock THEN 'Severe'
@@ -65,6 +67,7 @@ export async function GET(request: Request) {
        END AS stock_status
        FROM products p
        JOIN categories c ON c.id = p.category_id
+       JOIN users u ON u.id = p.supplier_id
        ${where}
        ORDER BY p.name ASC
        LIMIT $${values.length + 1} OFFSET $${values.length + 2}`,
@@ -94,16 +97,28 @@ export async function POST(request: Request) {
 
   const product = parsed.data;
   try {
+    const supplier = await pool.query(
+      "SELECT id FROM users WHERE id = $1 AND role = 'supplier' AND supplier_status = 'Approved'",
+      [product.supplier_id],
+    );
+    if (supplier.rowCount === 0) {
+      return errorResponse(
+        "Supplier tidak ditemukan atau belum berstatus Approved",
+        400,
+      );
+    }
+
     const result = await pool.query(
       `INSERT INTO products
-        (sku, name, category_id, description, buy_price, sell_price, min_stock,
-         low_stock, current_stock, unit, rack_location, image_url)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        (sku, name, category_id, supplier_id, description, buy_price, sell_price,
+         min_stock, low_stock, current_stock, unit, rack_location, image_url)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
        RETURNING *`,
       [
         product.sku,
         product.name,
         product.category_id,
+        product.supplier_id,
         product.description,
         product.buy_price,
         product.sell_price,
@@ -117,10 +132,12 @@ export async function POST(request: Request) {
     );
     return successResponse(result.rows[0], "Produk berhasil dibuat", 201);
   } catch (error) {
-    if (isPostgresError(error, "23505"))
+    if (isPostgresError(error, "23505")) {
       return errorResponse("SKU sudah digunakan", 409);
-    if (isPostgresError(error, "23503"))
-      return errorResponse("Kategori tidak ditemukan", 400);
+    }
+    if (isPostgresError(error, "23503")) {
+      return errorResponse("Kategori atau supplier tidak ditemukan", 400);
+    }
     console.error(error);
     return errorResponse("Gagal membuat produk", 500);
   }

@@ -3,11 +3,7 @@ import { requireRole } from "@/lib/utils/authGuard";
 import { pool } from "@/lib/utils/pool";
 
 export async function GET(request: Request) {
-  const access = await requireRole([
-    "admin",
-    "manager",
-    "staff",
-  ]);
+  const access = await requireRole(["admin", "manager", "staff", "supplier"]);
   if ("response" in access) return access.response;
 
   const { page, limit, offset, searchParams } = getPagination(request);
@@ -24,9 +20,16 @@ export async function GET(request: Request) {
   const endDate = searchParams.get("end_date");
   const supplierId = searchParams.get("supplier_id");
   const customerName = searchParams.get("customer_name")?.trim();
+  const search = searchParams.get("search")?.trim();
 
-  if (type && ["INCOMING", "OUTGOING"].includes(type))
+  if (access.user.role === "supplier") {
+    conditions.push("t.type = 'INCOMING'");
+    addFilter("t.supplier_id = ?", access.user.id);
+  }
+
+  if (type && ["INCOMING", "OUTGOING"].includes(type)) {
     addFilter("t.type = ?", type);
+  }
   if (
     status &&
     ["Pending", "Approved", "Rejected", "Shipped"].includes(status)
@@ -35,19 +38,32 @@ export async function GET(request: Request) {
   }
   if (startDate) addFilter("t.transaction_date >= ?", startDate);
   if (endDate) addFilter("t.transaction_date <= ?", endDate);
-  if (supplierId) addFilter("t.supplier_id = ?", supplierId);
+  if (supplierId && access.user.role !== "supplier") {
+    addFilter("t.supplier_id = ?", supplierId);
+  }
   if (customerName) addFilter("t.customer_name ILIKE ?", `%${customerName}%`);
+  if (search) {
+    values.push(`%${search}%`);
+    conditions.push(
+      `(t.transaction_number ILIKE $${values.length} OR t.customer_name ILIKE $${values.length} OR supplier.company_name ILIKE $${values.length} OR ro.po_number ILIKE $${values.length})`,
+    );
+  }
 
   const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
   const count = await pool.query<{ total: string }>(
-    `SELECT COUNT(*)::text AS total FROM transactions t ${where}`,
+    `SELECT COUNT(*)::text AS total
+       FROM transactions t
+       LEFT JOIN users supplier ON supplier.id = t.supplier_id
+       LEFT JOIN restock_orders ro ON ro.id = t.restock_order_id
+       ${where}`,
     values,
   );
   const total = Number(count.rows[0]?.total ?? 0);
   const result = await pool.query(
     `SELECT t.id, t.transaction_number, t.type, t.transaction_date,
             t.restock_order_id, t.supplier_id, t.customer_name, t.notes,
-            t.status, t.rejection_reason, t.created_at, t.updated_at,
+            t.proof_image_url, t.status, t.rejection_reason,
+            t.created_by, t.approved_by, t.created_at, t.updated_at,
             creator.full_name AS created_by_name,
             approver.full_name AS approved_by_name,
             supplier.company_name AS supplier_company,

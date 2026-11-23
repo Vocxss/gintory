@@ -1,10 +1,17 @@
+import bcrypt from "bcrypt";
+import type { NextAuthConfig } from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
 import type { IUserRow } from "@/lib/types/database";
 import { pool } from "@/lib/utils/pool";
 import { loginSchema } from "@/lib/validations/auth";
-import bcrypt from "bcrypt";
-import type { NextAuthConfig } from "next-auth";
-import NextAuth from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
+
+class SupplierStatusError extends CredentialsSignin {
+  constructor(code: string) {
+    super(code);
+    this.code = code;
+  }
+}
 
 const authOptions = {
   providers: [
@@ -15,8 +22,6 @@ const authOptions = {
         password: {},
       },
       async authorize(credential) {
-        
-
         const parsed = loginSchema.safeParse(credential);
         if (!parsed.success) return null;
 
@@ -32,9 +37,12 @@ const authOptions = {
             | "role"
             | "company_name"
             | "supplier_status"
+            | "rejection_reason"
           >
         >(
-          "SELECT id, full_name, email, password, role, company_name, supplier_status FROM users WHERE email = $1",
+          `SELECT id, full_name, email, password, role, company_name, supplier_status, rejection_reason
+             FROM users
+            WHERE email = $1`,
           [email],
         );
         if (rows.length === 0) return null;
@@ -43,12 +51,14 @@ const authOptions = {
         if (!checked) return null;
 
         const user = rows[0];
-        if (
-          user.role === "supplier" &&
-          (user.supplier_status === "Pending" ||
-            user.supplier_status === "Rejected")
-        ) {
-          return null;
+        if (user.role === "supplier" && user.supplier_status === "Pending") {
+          throw new SupplierStatusError("SUPPLIER_PENDING");
+        }
+        if (user.role === "supplier" && user.supplier_status === "Rejected") {
+          const reason = encodeURIComponent(
+            user.rejection_reason?.trim() || "Pendaftaran akun ditolak",
+          );
+          throw new SupplierStatusError(`SUPPLIER_REJECTED:${reason}`);
         }
 
         return {

@@ -8,8 +8,10 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const requestedStatus = searchParams.get("status");
+
   if (
     access.user.role === "manager" &&
+    requestedStatus &&
     requestedStatus !== "Approved"
   ) {
     return errorResponse(
@@ -18,21 +20,24 @@ export async function GET(request: Request) {
     );
   }
 
-  const status =
-    requestedStatus &&
-    ["Pending", "Approved", "Rejected"].includes(requestedStatus)
-      ? requestedStatus
-      : undefined;
+  const effectiveStatus =
+    access.user.role === "manager"
+      ? "Approved"
+      : requestedStatus &&
+          ["Pending", "Approved", "Rejected"].includes(requestedStatus)
+        ? requestedStatus
+        : undefined;
+
   const values: string[] = [];
   const where = ["role = 'supplier'"];
-  if (status) {
-    values.push(status);
+  if (effectiveStatus) {
+    values.push(effectiveStatus);
     where.push(`supplier_status = $${values.length}`);
   }
 
   const result = await pool.query(
     `SELECT id, full_name, email, role, company_name, supplier_status,
-            created_at, updated_at
+            rejection_reason, created_at, updated_at
        FROM users
       WHERE ${where.join(" AND ")}
       ORDER BY created_at DESC`,
