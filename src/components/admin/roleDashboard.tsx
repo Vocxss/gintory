@@ -12,6 +12,7 @@ import {
   DashboardTables,
   type DashboardTransaction,
 } from "@/components/admin/dashboardTables";
+import { ReportExportButton } from "@/components/features/reportExportSheet";
 import {
   Empty,
   EmptyDescription,
@@ -126,11 +127,16 @@ export function RoleDashboard({
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-bold text-primary">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">
-          Ringkasan operasional gudang sesuai peran Anda
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-primary">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">
+            Ringkasan operasional gudang sesuai peran Anda
+          </p>
+        </div>
+        {(dashboardRole === "admin" || dashboardRole === "manager") && (
+          <ReportExportButton role={dashboardRole} />
+        )}
       </div>
 
       <DashboardKpiGrid
