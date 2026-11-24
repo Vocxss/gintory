@@ -10,11 +10,11 @@ export const KPICard = ({
   icon: React.ReactNode;
 }) => {
   return (
-    <Card className="flex-row gap-2 items-center justify-start p-4">
+    <Card className="flex-row gap-0 items-center justify-start p-4">
       <span className="size-4 text-primary">{icon}</span>
       <CardHeader className="w-full flex flex-col items-start justify-start gap-1">
         <CardTitle className="w-full text-sm">{title}</CardTitle>
-        <CardDescription className=" text-lg text-secondary">
+        <CardDescription className=" text-lg text-secondary font-bold">
           {value}
         </CardDescription>
       </CardHeader>
