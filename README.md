@@ -132,7 +132,7 @@ Sistem memiliki 4 peran utama:
 
 Database menggunakan PostgreSQL dengan ekstensi UUID (`gen_random_uuid()`) dan 8 tabel utama:
 
-![Entity Relationship Diagram Gintory](docs/images/erd.webp)
+![Entity Relationship Diagram Gintory](docs/images/erd.png)
 ---
 
 ## 6. Struktur Folder Proyek
