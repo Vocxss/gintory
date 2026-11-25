@@ -51,12 +51,34 @@ export async function POST(request: Request) {
           throw Object.assign(new Error("PO_ALREADY_USED"), { status: 400 });
         }
 
+        const poItems = await client.query<{
+          product_id: string;
+          quantity: number;
+        }>(
+          "SELECT product_id, quantity FROM restock_order_items WHERE restock_order_id = $1",
+          [parsed.data.restock_order_id],
+        );
+        const poQtyMap = new Map(
+          poItems.rows.map((row) => [row.product_id, Number(row.quantity)]),
+        );
+
         if (!items || items.length === 0) {
-          const poItems = await client.query(
-            "SELECT product_id, quantity FROM restock_order_items WHERE restock_order_id = $1",
-            [parsed.data.restock_order_id],
-          );
           items = poItems.rows;
+        } else {
+          const seen = new Set<string>();
+          for (const item of items) {
+            if (seen.has(item.product_id)) {
+              throw Object.assign(new Error("DUPLICATE_ITEM"), { status: 400 });
+            }
+            seen.add(item.product_id);
+            const poQty = poQtyMap.get(item.product_id);
+            if (poQty === undefined) {
+              throw Object.assign(new Error("ITEM_NOT_IN_PO"), { status: 400 });
+            }
+            if (item.quantity > poQty) {
+              throw Object.assign(new Error("QTY_EXCEEDS_PO"), { status: 400 });
+            }
+          }
         }
       }
 
@@ -121,6 +143,10 @@ export async function POST(request: Request) {
       const messages: Record<string, string> = {
         PO_NOT_INSPECTING: "PO tidak ditemukan atau belum berstatus Inspecting",
         PO_ALREADY_USED: "PO sudah memiliki transaksi incoming aktif",
+        DUPLICATE_ITEM: "Item produk dalam transaksi tidak boleh duplikat",
+        ITEM_NOT_IN_PO: "Ada produk yang tidak terdaftar pada PO terpilih",
+        QTY_EXCEEDS_PO:
+          "Jumlah barang tidak boleh melebihi jumlah yang dipesan pada PO",
         SUPPLIER_REQUIRED: "Supplier atau nomor PO wajib diisi",
         SUPPLIER_NOT_APPROVED: "Supplier belum berstatus Approved",
         ITEM_REQUIRED: "Item transaksi minimal satu",

@@ -76,6 +76,7 @@ export async function GET(request: Request) {
                   'product_name', p.name,
                   'sku', p.sku,
                   'quantity', ti.quantity,
+                  'po_quantity', roi.quantity,
                   'unit', p.unit
                 ) ORDER BY p.name
               ) FILTER (WHERE ti.id IS NOT NULL),
@@ -87,6 +88,9 @@ export async function GET(request: Request) {
        LEFT JOIN users supplier ON supplier.id = t.supplier_id
        LEFT JOIN restock_orders ro ON ro.id = t.restock_order_id
        LEFT JOIN transaction_items ti ON ti.transaction_id = t.id
+       LEFT JOIN restock_order_items roi
+         ON roi.restock_order_id = t.restock_order_id
+        AND roi.product_id = ti.product_id
        LEFT JOIN products p ON p.id = ti.product_id
        ${where}
       GROUP BY t.id, creator.full_name, approver.full_name,

@@ -74,7 +74,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   try {
     const updated = await runTransaction(client, async () => {
       const transaction = await client.query(
-        `SELECT id, type, status, created_by
+        `SELECT id, type, status, created_by, restock_order_id
            FROM transactions
           WHERE id = $1
           FOR UPDATE`,
@@ -86,6 +86,37 @@ export async function PATCH(request: Request, context: RouteContext) {
       const trx = transaction.rows[0];
       if (trx.status !== "Pending" || trx.created_by !== access.user.id) {
         throw Object.assign(new Error("FORBIDDEN"), { status: 403 });
+      }
+
+      if (
+        parsed.data.items &&
+        trx.type === "INCOMING" &&
+        trx.restock_order_id
+      ) {
+        const poItems = await client.query<{
+          product_id: string;
+          quantity: number;
+        }>(
+          "SELECT product_id, quantity FROM restock_order_items WHERE restock_order_id = $1",
+          [trx.restock_order_id],
+        );
+        const poQtyMap = new Map(
+          poItems.rows.map((row) => [row.product_id, Number(row.quantity)]),
+        );
+        const seen = new Set<string>();
+        for (const item of parsed.data.items) {
+          if (seen.has(item.product_id)) {
+            throw Object.assign(new Error("DUPLICATE_ITEM"), { status: 400 });
+          }
+          seen.add(item.product_id);
+          const poQty = poQtyMap.get(item.product_id);
+          if (poQty === undefined) {
+            throw Object.assign(new Error("ITEM_NOT_IN_PO"), { status: 400 });
+          }
+          if (item.quantity > poQty) {
+            throw Object.assign(new Error("QTY_EXCEEDS_PO"), { status: 400 });
+          }
+        }
       }
 
       if (parsed.data.items && trx.type === "OUTGOING") {
@@ -175,6 +206,24 @@ export async function PATCH(request: Request, context: RouteContext) {
       }
       if (error.message === "INVALID_QTY") {
         return errorResponse("Kuantitas barang keluar minimal 1", status);
+      }
+      if (error.message === "DUPLICATE_ITEM") {
+        return errorResponse(
+          "Item produk dalam transaksi tidak boleh duplikat",
+          status,
+        );
+      }
+      if (error.message === "ITEM_NOT_IN_PO") {
+        return errorResponse(
+          "Ada produk yang tidak terdaftar pada PO terkait",
+          status,
+        );
+      }
+      if (error.message === "QTY_EXCEEDS_PO") {
+        return errorResponse(
+          "Jumlah barang tidak boleh melebihi jumlah yang dipesan pada PO",
+          status,
+        );
       }
     }
     console.error(error);
