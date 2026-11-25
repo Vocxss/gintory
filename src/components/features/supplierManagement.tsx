@@ -153,20 +153,21 @@ export function SupplierManagement() {
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
-                            {supplier.supplier_status !== "Approved" && (
-                              <Button
-                                size="sm"
-                                disabled={verify.isPending}
-                                onClick={() =>
-                                  verify.mutate({
-                                    id: supplier.id,
-                                    status: "Approved",
-                                  })
-                                }
-                              >
-                                Setujui
-                              </Button>
-                            )}
+                            {supplier.supplier_status !== "Approved" &&
+                              supplier.supplier_status !== "Rejected" && (
+                                <Button
+                                  size="sm"
+                                  disabled={verify.isPending}
+                                  onClick={() =>
+                                    verify.mutate({
+                                      id: supplier.id,
+                                      status: "Approved",
+                                    })
+                                  }
+                                >
+                                  Setujui
+                                </Button>
+                              )}
                             {supplier.supplier_status === "Pending" && (
                               <Button
                                 size="sm"
@@ -252,7 +253,7 @@ export function SupplierManagement() {
                       <Textarea
                         {...field}
                         id="supplier-reject-reason"
-                        placeholder="Contoh: Dokumen legalitas perusahaan tidak lengkap"
+                        placeholder="Contoh: nama perusahaan tidak dapat diverifikasi"
                       />
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
