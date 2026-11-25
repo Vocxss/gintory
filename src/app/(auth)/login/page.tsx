@@ -33,7 +33,7 @@ export default function LoginPage() {
   const [showDemoAccount, setShowDemoAccount] = useState(false);
 
   return (
-    <div className="flex min-h-svh items-center justify-center gap-6 bg-muted p-6 md:p-10">
+    <div className="flex flex-wrap min-h-svh items-center justify-center gap-6 bg-muted p-6 md:p-10">
       <Button
         className={"fixed top-4 right-4"}
         onClick={() => setShowDemoAccount(!showDemoAccount)}

@@ -7,6 +7,7 @@ import { pool } from "@/lib/utils/pool";
 import { loginSchema } from "@/lib/validations/auth";
 
 class SupplierStatusError extends CredentialsSignin {
+  static type = "CredentialsSignin";
   constructor(code: string) {
     super(code);
     this.code = code;
@@ -42,7 +43,7 @@ const authOptions = {
         >(
           `SELECT id, full_name, email, password, role, company_name, supplier_status, rejection_reason
              FROM users
-            WHERE email = $1`,
+            WHERE LOWER(email) = LOWER($1)`,
           [email],
         );
         if (rows.length === 0) return null;
