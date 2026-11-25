@@ -1,11 +1,24 @@
 import { z } from "zod";
-import { imagePathSchema } from "@/lib/validations/common";
+import { imagePathSchema, uuidSchema } from "@/lib/validations/common";
+
+const stockThresholdsRefine = (value: {
+  min_stock?: number;
+  low_stock?: number;
+}) =>
+  value.min_stock === undefined ||
+  value.low_stock === undefined ||
+  value.low_stock > value.min_stock;
+
+const stockThresholdsMessage = {
+  message: "low_stock harus lebih besar dari min_stock",
+  path: ["low_stock"],
+};
 
 const productFields = {
   sku: z.string().trim().min(1, "SKU wajib diisi").max(50),
   name: z.string().trim().min(1, "Nama produk wajib diisi").max(150),
-  category_id: z.uuid("Kategori tidak valid"),
-  supplier_id: z.uuid("Supplier tidak valid"),
+  category_id: uuidSchema("Kategori tidak valid"),
+  supplier_id: uuidSchema("Supplier tidak valid"),
   description: z.string().trim().min(1, "Deskripsi wajib diisi"),
   buy_price: z.coerce.number().finite().min(0, "Harga beli minimal 0"),
   sell_price: z.coerce.number().finite().min(0, "Harga jual minimal 0"),
@@ -19,12 +32,33 @@ const productFields = {
 
 export const productSchema = z
   .object(productFields)
-  .refine((value) => value.low_stock > value.min_stock, {
-    message: "low_stock harus lebih besar dari min_stock",
-    path: ["low_stock"],
-  });
+  .refine(stockThresholdsRefine, stockThresholdsMessage);
 
-export const productUpdateSchema = z
-  .object(productFields)
-  .partial()
-  .extend({ sku: z.string().trim().min(1).max(50).optional() });
+export const adminUpdateProductSchema = z
+  .object({
+    name: productFields.name.optional(),
+    category_id: productFields.category_id.optional(),
+    supplier_id: productFields.supplier_id.optional(),
+    description: productFields.description.optional(),
+    buy_price: productFields.buy_price.optional(),
+    sell_price: productFields.sell_price.optional(),
+    min_stock: productFields.min_stock.optional(),
+    low_stock: productFields.low_stock.optional(),
+    unit: productFields.unit.optional(),
+    rack_location: productFields.rack_location.optional(),
+    image_url: productFields.image_url.optional(),
+  })
+  .strict()
+  .refine(stockThresholdsRefine, stockThresholdsMessage);
+
+export const managerUpdateProductSchema = z
+  .object({
+    rack_location: productFields.rack_location.optional(),
+    min_stock: productFields.min_stock.optional(),
+    low_stock: productFields.low_stock.optional(),
+    unit: productFields.unit.optional(),
+    description: productFields.description.optional(),
+    image_url: productFields.image_url.optional(),
+  })
+  .strict()
+  .refine(stockThresholdsRefine, stockThresholdsMessage);

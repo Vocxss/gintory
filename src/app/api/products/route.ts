@@ -83,7 +83,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const access = await requireRole(["admin", "manager"]);
+  const access = await requireRole(["admin"]);
   if ("response" in access) return access.response;
 
   const parsed = productSchema.safeParse(await request.json());
