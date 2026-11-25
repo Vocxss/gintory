@@ -1,9 +1,13 @@
 "use client";
 
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useState } from "react";
 import {
-  UserFormSheet,
   type InternalUserFormValues,
   type ManagedUser,
+  UserFormSheet,
 } from "@/components/admin/userFormSheet";
 import { TablePagination } from "@/components/features/tablePagination";
 import { RoleBadge, WorkflowStatusBadge } from "@/components/statusBadge";
@@ -19,10 +23,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Plus, Search, Trash2 } from "lucide-react";
-import { useSession } from "next-auth/react";
-import { useState } from "react";
 
 const PAGE_SIZE = 20;
 
@@ -77,7 +77,6 @@ export function UserManagement() {
         const body: Record<string, unknown> = {
           full_name: values.full_name,
           email: values.email,
-          role: values.role,
         };
         if (values.password) body.password = values.password;
         return requestJson(`/api/users/${editing.id}`, "PATCH", body);

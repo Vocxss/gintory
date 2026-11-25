@@ -1,5 +1,12 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ChevronDownIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Eye, EyeClosed, LockKeyhole, Mail, UserRound } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -20,13 +27,6 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import type { UserRole } from "@/lib/types/database";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronDownIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Eye, EyeClosed, LockKeyhole, Mail, UserRound } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
-import { z } from "zod";
 
 export type ManagedUser = {
   id: string;
@@ -170,32 +170,34 @@ export function UserFormSheet({
                 </Field>
               )}
             />
-            <Controller
-              name="role"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <Field>
-                  <FieldLabel htmlFor="user-role">Role</FieldLabel>
-                  <div className="relative w-full">
-                    <select
-                      {...field}
-                      id="user-role"
-                      className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
-                    >
-                      <option value="admin">Admin</option>
-                      <option value="manager">Warehouse Manager</option>
-                      <option value="staff">Staff Gudang</option>
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-gray-800">
-                      <HugeiconsIcon icon={ChevronDownIcon} />
+            {!editing && (
+              <Controller
+                name="role"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field>
+                    <FieldLabel htmlFor="user-role">Role</FieldLabel>
+                    <div className="relative w-full">
+                      <select
+                        {...field}
+                        id="user-role"
+                        className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+                      >
+                        <option value="admin">Admin</option>
+                        <option value="manager">Warehouse Manager</option>
+                        <option value="staff">Staff Gudang</option>
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-gray-800">
+                        <HugeiconsIcon icon={ChevronDownIcon} />
+                      </div>
                     </div>
-                  </div>
-                  {fieldState.invalid && (
-                    <FieldError errors={[fieldState.error]} />
-                  )}
-                </Field>
-              )}
-            />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+            )}
             <Controller
               name="password"
               control={form.control}
