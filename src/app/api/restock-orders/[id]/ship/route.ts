@@ -3,14 +3,24 @@ import { requireRole } from "@/lib/utils/authGuard";
 import { notifyRole } from "@/lib/utils/notify";
 import { pool } from "@/lib/utils/pool";
 import { runTransaction } from "@/lib/utils/transaction";
+import { restockProofSchema } from "@/lib/validations/restock";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-export async function PATCH(_request: Request, context: RouteContext) {
+export async function PATCH(request: Request, context: RouteContext) {
   const access = await requireRole(["supplier"]);
   if ("response" in access) return access.response;
 
   const { id } = await context.params;
+  const parsed = restockProofSchema.safeParse(await request.json());
+  if (!parsed.success) {
+    return errorResponse(
+      "Bukti foto barang sebelum pengiriman wajib diunggah",
+      400,
+      parsed.error.flatten().fieldErrors,
+    );
+  }
+
   const client = await pool.connect();
   try {
     const updated = await runTransaction(client, async () => {
@@ -30,17 +40,19 @@ export async function PATCH(_request: Request, context: RouteContext) {
 
       const result = await client.query(
         `UPDATE restock_orders
-            SET status = 'In Transit', updated_at = NOW()
-          WHERE id = $1
+            SET status = 'In Transit',
+                delivery_proof_url = $1,
+                updated_at = NOW()
+          WHERE id = $2
           RETURNING *`,
-        [id],
+        [parsed.data.delivery_proof_url, id],
       );
 
       await notifyRole({
         client,
         role: "manager",
         title: "PO Dalam Pengiriman",
-        message: `Supplier mulai mengirim pesanan ${po.rows[0].po_number} (In Transit).`,
+        message: `Supplier telah mengunggah bukti foto sebelum pengiriman dan mengirim pesanan ${po.rows[0].po_number} (In Transit).`,
         link: `/manager/restock-orders/${id}`,
       });
       await notifyRole({
@@ -53,7 +65,10 @@ export async function PATCH(_request: Request, context: RouteContext) {
 
       return result.rows[0];
     });
-    return successResponse(updated, "Status PO diperbarui menjadi In Transit");
+    return successResponse(
+      updated,
+      "Bukti foto sebelum pengiriman disimpan dan status PO diperbarui menjadi In Transit",
+    );
   } catch (error) {
     if (error instanceof Error && "status" in error) {
       const status = (error as Error & { status: number }).status;

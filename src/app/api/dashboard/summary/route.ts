@@ -55,7 +55,7 @@ export async function GET() {
           ? pool.query<{ count: number }>(
               `SELECT COUNT(*)::int AS count
                  FROM restock_orders
-                WHERE status = 'In Transit' AND delivery_proof_url IS NOT NULL`,
+                WHERE status = 'In Transit'`,
             )
           : Promise.resolve({ rows: [{ count: 0 }] }),
         access.user.role === "manager"

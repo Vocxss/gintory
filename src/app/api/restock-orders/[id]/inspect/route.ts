@@ -24,10 +24,7 @@ export async function PATCH(_: Request, context: RouteContext) {
       if (po.rowCount === 0) {
         throw Object.assign(new Error("NOT_FOUND"), { status: 404 });
       }
-      if (
-        po.rows[0].status !== "In Transit" ||
-        !po.rows[0].delivery_proof_url
-      ) {
+      if (po.rows[0].status !== "In Transit") {
         throw Object.assign(new Error("INVALID_TRANSITION"), { status: 400 });
       }
 
@@ -58,7 +55,7 @@ export async function PATCH(_: Request, context: RouteContext) {
         return errorResponse("PO tidak ditemukan", status);
       }
       return errorResponse(
-        "PO harus berstatus In Transit dan memiliki bukti foto kedatangan",
+        "PO harus berstatus In Transit untuk diinstruksikan pemeriksaan fisik",
         status,
       );
     }
