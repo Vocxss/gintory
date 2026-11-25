@@ -83,7 +83,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const access = await requireRole(["admin"]);
+  const access = await requireRole(["admin", "manager"]);
   if ("response" in access) return access.response;
 
   const parsed = productSchema.safeParse(await request.json());
@@ -96,6 +96,8 @@ export async function POST(request: Request) {
   }
 
   const product = parsed.data;
+  const initialStock =
+    access.user.role === "manager" ? 0 : product.current_stock;
   try {
     const supplier = await pool.query(
       "SELECT id FROM users WHERE id = $1 AND role = 'supplier' AND supplier_status = 'Approved'",
@@ -124,7 +126,7 @@ export async function POST(request: Request) {
         product.sell_price,
         product.min_stock,
         product.low_stock,
-        product.current_stock,
+        initialStock,
         product.unit,
         product.rack_location,
         product.image_url,

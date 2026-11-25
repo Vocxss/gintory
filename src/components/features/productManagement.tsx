@@ -125,7 +125,10 @@ export function ProductManagement({
         } = values;
         return api(`/api/products/${editing.id}`, "PATCH", adminUpdatePayload);
       }
-      return api("/api/products", "POST", values);
+      return api("/api/products", "POST", {
+        ...values,
+        current_stock: accessRole === "manager" ? 0 : values.current_stock,
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
@@ -171,16 +174,14 @@ export function ProductManagement({
             Master katalog produk Gintory
           </p>
         </div>
-        {accessRole === "admin" && (
-          <Button
-            onClick={() => {
-              setEditing(null);
-              setOpen(true);
-            }}
-          >
-            <Plus /> Tambah Produk
-          </Button>
-        )}
+        <Button
+          onClick={() => {
+            setEditing(null);
+            setOpen(true);
+          }}
+        >
+          <Plus /> Tambah Produk
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
@@ -286,6 +287,7 @@ export function ProductManagement({
                             </Button>
                             {accessRole === "admin" && (
                               <Button
+                                disabled={product.current_stock > 0}
                                 size="icon-xs"
                                 variant="destructive"
                                 onClick={() => {

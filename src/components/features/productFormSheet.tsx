@@ -111,8 +111,8 @@ export function ProductFormSheet({
   onOpenChange: (open: boolean) => void;
   onSubmit: (values: ProductFormValues) => void;
 }) {
-  const isManager = accessRole === "manager";
   const isEditing = Boolean(editing);
+  const isManager = accessRole === "manager" && isEditing;
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(formSchema),
@@ -176,7 +176,7 @@ export function ProductFormSheet({
                       {...field}
                       id="product-sku"
                       placeholder="FNT-MSE-VX7-BLK"
-                      disabled={isEditing || isManager}
+                      disabled={isEditing}
                     />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
@@ -268,7 +268,8 @@ export function ProductFormSheet({
             <div className="grid grid-cols-2 gap-3">
               {numberFields.map((item) => {
                 const isFieldDisabled =
-                  (item.name === "current_stock" && (isEditing || isManager)) ||
+                  (item.name === "current_stock" &&
+                    (isEditing || accessRole === "manager")) ||
                   (item.commercial && isManager);
                 return (
                   <Controller
