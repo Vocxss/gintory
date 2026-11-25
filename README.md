@@ -2,10 +2,25 @@
   <img src="public/logotypo.webp" alt="Gintory Logo Banner" width="320" />
 </p>
 
-<h1 align="center">Gintory — Gaming Tools Warehouse Management System</h1>
+<h1 align="center"><strong>Gintory</strong></h1>
 
 <p align="center">
-  Sistem manajemen inventori, pengadaan (Purchase Order), dan mutasi stok gudang aksesoris gaming berbasis <strong>Next.js App Router</strong>, <strong>TypeScript</strong>, <strong>PostgreSQL</strong>, dan prinsip <strong>Segregation of Duties (SoD)</strong>.
+   Gaming Tools Warehouse Management System.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-16.4-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js" />
+  <img src="https://img.shields.io/badge/React-19.3-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React" />
+  <img src="https://img.shields.io/badge/TypeScript-7.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/shadcn%2Fui-Base_UI-18181B?style=for-the-badge&logo=shadcnui&logoColor=white" alt="shadcn/ui" />
+  <img src="https://img.shields.io/badge/PostgreSQL-pg-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/NextAuth.js-v5-7C3AED?style=for-the-badge&logo=auth0&logoColor=white" alt="NextAuth.js" />
+  <img src="https://img.shields.io/badge/Zod-v4-3E67B1?style=for-the-badge&logo=zod&logoColor=white" alt="Zod" />
+  <img src="https://img.shields.io/badge/TanStack_Query-v5-FF4154?style=for-the-badge&logo=reactquery&logoColor=white" alt="TanStack Query" />
+  <img src="https://img.shields.io/badge/React_Hook_Form-v7-EC5990?style=for-the-badge&logo=reacthookform&logoColor=white" alt="React Hook Form" />
+  <img src="https://img.shields.io/badge/ExcelJS-4.4-217346?style=for-the-badge&logo=microsoftexcel&logoColor=white" alt="ExcelJS" />
+  <img src="https://img.shields.io/badge/Biome-2.4-60A5FA?style=for-the-badge&logo=biome&logoColor=white" alt="Biome" />
 </p>
 
 ---
@@ -24,7 +39,7 @@
 
 ---
 
-## 1. Deskripsi Singkat & Masalah yang Diangkat
+## 1. Deskripsi Singkat
 
 **Gintory** adalah aplikasi web manajemen gudang (*Warehouse Management System*) yang dirancang khusus untuk pengelolaan stok perangkat keras gaming (seperti *gaming mouse*, *mechanical keyboard*, *gaming headset*, dan *mousepad/deskmat*) beserta kolaborasi pengadaan barang bersama supplier eksternal.
 
@@ -113,45 +128,11 @@ Sistem memiliki 4 peran utama:
 - **Anti-*Race Condition* Stok:** Saat menyetujui `INCOMING` atau mengirim `OUTGOING`, baris `products` dikunci dengan `SELECT ... FOR UPDATE OF p` secara terurut (`ORDER BY ti.product_id`) untuk mencegah *race condition* dan *deadlock*.
 - **Keamanan Upload File (`POST /api/uploads`):** Membatasi ukuran maksimal **5 MB**, memvalidasi MIME type (`image/jpeg`, `image/png`, `image/webp`, `image/gif`), menyaring nama file dengan sanitasi alfanumerik + UUID acak, dan membatasi jenis upload per role.
 
----
-
 ## 5. Skema Database
 
 Database menggunakan PostgreSQL dengan ekstensi UUID (`gen_random_uuid()`) dan 8 tabel utama:
 
-```mermaid
-erDiagram
-    users ||--o{ products : "supplier_id"
-    categories ||--o{ products : "category_id"
-    users ||--o{ restock_orders : "supplier_id / created_by"
-    restock_orders ||--o{ restock_order_items : "restock_order_id"
-    products ||--o{ restock_order_items : "product_id"
-    restock_orders ||--o{ transactions : "restock_order_id"
-    users ||--o{ transactions : "created_by / approved_by / supplier_id"
-    transactions ||--o{ transaction_items : "transaction_id"
-    products ||--o{ transaction_items : "product_id"
-    users ||--o{ notifications : "user_id"
-```
-
-### Ringkasan Tabel & Kolom Utama
-
-1. **`users`**
-   - `id` (`uuid`, PK), `full_name` (`varchar`), `email` (`varchar`, unique), `password` (`text`), `role` (`user_role`: `admin` | `manager` | `staff` | `supplier`), `company_name` (`varchar`, nullable), `supplier_status` (`supplier_status`: `Pending` | `Approved` | `Rejected`, nullable), `rejection_reason` (`text`, nullable), `created_at`, `updated_at`.
-2. **`categories`**
-   - `id` (`uuid`, PK), `name` (`varchar`, unique), `description` (`text`), `image_url` (`text`), `created_at`, `updated_at`.
-3. **`products`**
-   - `id` (`uuid`, PK), `sku` (`varchar`, unique), `name` (`varchar`), `category_id` (`uuid`, FK → `categories.id`), `supplier_id` (`uuid`, FK → `users.id`), `description` (`text`), `buy_price` (`numeric`), `sell_price` (`numeric`), `min_stock` (`integer`), `low_stock` (`integer`), `current_stock` (`integer`, default `0`), `unit` (`varchar`), `rack_location` (`varchar`), `image_url` (`text`), `created_at`, `updated_at`.
-4. **`restock_orders`**
-   - `id` (`uuid`, PK), `po_number` (`varchar`, unique), `supplier_id` (`uuid`, FK → `users.id`), `created_by` (`uuid`, FK → `users.id`), `order_date` (`date`), `expected_delivery_date` (`date`), `notes` (`text`), `status` (`restock_status`: `Pending` | `Confirmed` | `Rejected` | `In Transit` | `Inspecting` | `Received` | `Returned`), `status_reason` (`text`), `delivery_proof_url` (`text`), `refund_requested` (`boolean`), `refund_reason` (`text`), `replacement_po_id` (`uuid`), `created_at`, `updated_at`.
-5. **`restock_order_items`**
-   - `id` (`uuid`, PK), `restock_order_id` (`uuid`, FK → `restock_orders.id`), `product_id` (`uuid`, FK → `products.id`), `quantity` (`integer`).
-6. **`transactions`**
-   - `id` (`uuid`, PK), `transaction_number` (`varchar`, unique), `type` (`transaction_type`: `INCOMING` | `OUTGOING`), `transaction_date` (`date`), `restock_order_id` (`uuid`, nullable, FK → `restock_orders.id`), `supplier_id` (`uuid`, nullable, FK → `users.id`), `customer_name` (`varchar`, nullable), `notes` (`text`), `proof_image_url` (`text`), `status` (`transaction_status`: `Pending` | `Approved` | `Rejected` | `Shipped`), `rejection_reason` (`text`), `created_by` (`uuid`, FK → `users.id`), `approved_by` (`uuid`, nullable, FK → `users.id`), `created_at`, `updated_at`.
-7. **`transaction_items`**
-   - `id` (`uuid`, PK), `transaction_id` (`uuid`, FK → `transactions.id`), `product_id` (`uuid`, FK → `products.id`), `quantity` (`integer`).
-8. **`notifications`**
-   - `id` (`uuid`, PK), `user_id` (`uuid`, FK → `users.id`), `title` (`varchar`), `message` (`text`), `link` (`text`), `is_read` (`boolean`, default `false`), `created_at`.
-
+![Entity Relationship Diagram Gintory](docs/images/erd.webp)
 ---
 
 ## 6. Struktur Folder Proyek
@@ -160,6 +141,7 @@ erDiagram
 gintory/
 ├── docs/
 │   └── images/
+│       ├── erd.webp                               # Entity Relationship Diagram database
 │       └── gintory-warehouse-flowchart-id.svg # flowchart fitur utama
 ├── public/
 │   ├── logo.webp / logomono.webp / logotypo.webp
