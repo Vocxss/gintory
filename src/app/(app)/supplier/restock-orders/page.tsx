@@ -1,5 +1,19 @@
-function SupplierRestockOrdersPage() {
-  return <div />;
-}
+"use client";
 
-export default SupplierRestockOrdersPage;
+import { Suspense } from "react";
+import { RestockManagement } from "@/components/features/restockManagement";
+import { Spinner } from "@/components/ui/spinner";
+
+export default function SupplierRestockOrdersPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center py-12">
+          <Spinner />
+        </div>
+      }
+    >
+      <RestockManagement accessRole="supplier" />
+    </Suspense>
+  );
+}
