@@ -1,7 +1,5 @@
 "use client";
 
-import { Download, FileSpreadsheet } from "lucide-react";
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -12,6 +10,8 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Spinner } from "@/components/ui/spinner";
+import { Download, FileSpreadsheet } from "lucide-react";
+import { useState } from "react";
 
 const ROLE_SHEETS: Record<"admin" | "manager", string[]> = {
   admin: [
@@ -19,13 +19,13 @@ const ROLE_SHEETS: Record<"admin" | "manager", string[]> = {
     "Inventori Produk (Harga Beli, Harga Jual, Nilai Stok & Status)",
     "Kategori Produk",
     "Pengguna & Verifikasi Supplier",
-    "Riwayat Transaksi Gudang",
+    "Daftar Transaksi Gudang",
   ],
   manager: [
     "Ringkasan Operasional (Stok, Pending Approval, Inspeksi & Retur)",
     "Produk & Status Stok Kritis",
     "Daftar Purchase Order & Klaim Refund",
-    "Riwayat Transaksi Gudang",
+    "Daftar Transaksi Gudang",
     "Daftar Supplier Aktif (Approved)",
   ],
 };

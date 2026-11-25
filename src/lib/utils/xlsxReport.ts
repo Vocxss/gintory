@@ -225,7 +225,7 @@ export function buildAdminWorkbook(data: AdminReportData) {
   }
   styleHeaderRow(usersSheet);
 
-  const trxSheet = workbook.addWorksheet("Riwayat Transaksi");
+  const trxSheet = workbook.addWorksheet("Daftar Transaksi");
   trxSheet.columns = [
     { header: "No. Transaksi", key: "transaction_number", width: 24 },
     { header: "Tipe", key: "type", width: 14 },
