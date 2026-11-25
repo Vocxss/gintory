@@ -1,10 +1,5 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { Controller, useForm, useWatch } from "react-hook-form";
-import { z } from "zod";
 import { ProductQuantityPicker } from "@/components/features/productQuantityPicker";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +16,13 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { dateStringSchema, uuidSchema } from "@/lib/validations/common";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ChevronDownIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { z } from "zod";
 
 type Supplier = { id: string; full_name: string; company_name: string | null };
 type SupplierProduct = {
@@ -164,22 +166,27 @@ export function RestockCreateSheet({
               render={({ field, fieldState }) => (
                 <Field>
                   <FieldLabel htmlFor="po-supplier">Supplier</FieldLabel>
-                  <select
-                    {...field}
-                    id="po-supplier"
-                    className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
-                    onChange={(event) => {
-                      field.onChange(event);
-                      setItems({});
-                    }}
-                  >
-                    <option value="">Pilih supplier approved</option>
-                    {suppliers.map((supplier) => (
-                      <option key={supplier.id} value={supplier.id}>
-                        {supplier.company_name ?? supplier.full_name}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative w-full">
+                    <select
+                      {...field}
+                      id="po-supplier"
+                      className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm appearance-none"
+                      onChange={(event) => {
+                        field.onChange(event);
+                        setItems({});
+                      }}
+                    >
+                      <option value="">Pilih supplier approved</option>
+                      {suppliers.map((supplier) => (
+                        <option key={supplier.id} value={supplier.id}>
+                          {supplier.company_name ?? supplier.full_name}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-gray-800">
+                      <HugeiconsIcon icon={ChevronDownIcon} />
+                    </div>
+                  </div>
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}

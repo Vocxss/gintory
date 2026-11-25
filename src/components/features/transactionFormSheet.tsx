@@ -1,9 +1,5 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
-import { Controller, useForm, useWatch } from "react-hook-form";
-import { z } from "zod";
 import { ImageUploadField } from "@/components/features/imageUploadField";
 import { ProductQuantityPicker } from "@/components/features/productQuantityPicker";
 import { Button } from "@/components/ui/button";
@@ -21,6 +17,12 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { dateStringSchema } from "@/lib/validations/common";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ChevronDownIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useEffect, useState } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { z } from "zod";
 
 export type TransactionListItem = {
   id: string;
@@ -331,29 +333,36 @@ export function TransactionFormSheet({
                         <FieldLabel htmlFor="trx-po">
                           Purchase Order (Inspecting)
                         </FieldLabel>
-                        <select
-                          {...field}
-                          id="trx-po"
-                          disabled={isLoadingPos || isPending}
-                          onChange={(event) => {
-                            field.onChange(event.target.value);
-                            handlePoChange(event.target.value);
-                          }}
-                          className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
-                        >
-                          <option value="">
-                            {isLoadingPos
-                              ? "Memuat daftar PO Inspecting..."
-                              : "Pilih PO Inspecting"}
-                          </option>
-                          {inspectingPos.map((po) => (
-                            <option key={po.id} value={po.id}>
-                              {po.supplier_company
-                                ? `${po.po_number} — ${po.supplier_company}`
-                                : po.po_number}
+
+                        <div className="relative w-full">
+                          <select
+                            {...field}
+                            id="trx-po"
+                            disabled={isLoadingPos || isPending}
+                            onChange={(event) => {
+                              field.onChange(event.target.value);
+                              handlePoChange(event.target.value);
+                            }}
+                            className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm appearance-none"
+                          >
+                            <option value="">
+                              {isLoadingPos
+                                ? "Memuat daftar PO Inspecting..."
+                                : "Pilih PO Inspecting"}
                             </option>
-                          ))}
-                        </select>
+                            {inspectingPos.map((po) => (
+                              <option key={po.id} value={po.id}>
+                                {po.supplier_company
+                                  ? `${po.po_number} — ${po.supplier_company}`
+                                  : po.po_number}
+                              </option>
+                            ))}
+                          </select>
+                          <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-gray-800">
+                            <HugeiconsIcon icon={ChevronDownIcon} />
+                          </div>
+                        </div>
+
                         {posError && (
                           <p className="text-xs text-destructive">{posError}</p>
                         )}

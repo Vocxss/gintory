@@ -1,12 +1,5 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronDownIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Eye, EyeClosed, LockKeyhole, Mail, UserRound } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Controller, useForm } from "react-hook-form";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Field,
@@ -27,6 +20,13 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import type { UserRole } from "@/lib/types/database";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ChevronDownIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Eye, EyeClosed, LockKeyhole, Mail, UserRound } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
 
 export type ManagedUser = {
   id: string;
@@ -181,9 +181,8 @@ export function UserFormSheet({
                       <select
                         {...field}
                         id="user-role"
-                        className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+                        className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm appearance-none"
                       >
-                        <option value="admin">Admin</option>
                         <option value="manager">Warehouse Manager</option>
                         <option value="staff">Staff Gudang</option>
                       </select>

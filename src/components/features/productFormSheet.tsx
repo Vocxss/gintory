@@ -1,9 +1,5 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
-import { Controller, useForm, useWatch } from "react-hook-form";
-import { z } from "zod";
 import { ImageUploadField } from "@/components/features/imageUploadField";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +16,12 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { imagePathSchema, uuidSchema } from "@/lib/validations/common";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ChevronDownIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useEffect } from "react";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { z } from "zod";
 
 export type ProductItem = {
   id: string;
@@ -205,19 +207,24 @@ export function ProductFormSheet({
                 render={({ field, fieldState }) => (
                   <Field>
                     <FieldLabel htmlFor="product-category">Kategori</FieldLabel>
-                    <select
-                      {...field}
-                      id="product-category"
-                      disabled={isManager}
-                      className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <option value="">Pilih kategori</option>
-                      {categories.map((category) => (
-                        <option key={category.id} value={category.id}>
-                          {category.name}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="relative w-full">
+                      <select
+                        {...field}
+                        id="product-category"
+                        disabled={isManager}
+                        className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm appearance-none disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <option value="">Pilih kategori</option>
+                        {categories.map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-gray-800">
+                        <HugeiconsIcon icon={ChevronDownIcon} />
+                      </div>
+                    </div>
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}
@@ -230,19 +237,24 @@ export function ProductFormSheet({
                 render={({ field, fieldState }) => (
                   <Field>
                     <FieldLabel htmlFor="product-supplier">Supplier</FieldLabel>
-                    <select
-                      {...field}
-                      id="product-supplier"
-                      disabled={isManager}
-                      className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      <option value="">Pilih supplier</option>
-                      {suppliers.map((supplier) => (
-                        <option key={supplier.id} value={supplier.id}>
-                          {supplier.name}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="relative w-full">
+                      <select
+                        {...field}
+                        id="product-supplier"
+                        disabled={isManager}
+                        className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <option value="">Pilih supplier</option>
+                        {suppliers.map((supplier) => (
+                          <option key={supplier.id} value={supplier.id}>
+                            {supplier.name}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-gray-800">
+                        <HugeiconsIcon icon={ChevronDownIcon} />
+                      </div>
+                    </div>
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
                     )}
