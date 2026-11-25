@@ -1,7 +1,13 @@
 import bcrypt from "bcrypt";
-import { pool } from "../utils/pool";
+import { Pool } from "pg";
 
 export async function seedDatabase() {
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error("DATABASE_URL tidak ditemukan di environment variables.");
+  }
+
+  const pool = new Pool({ connectionString });
   const client = await pool.connect();
 
   const ids = {
