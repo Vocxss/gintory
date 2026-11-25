@@ -1,11 +1,20 @@
 import { z } from "zod";
 import {
+  getTodayDateString,
+  PAST_TRANSACTION_DATE_MESSAGE,
+} from "@/lib/utils/date";
+import {
   dateStringSchema,
   imagePathSchema,
   optionalNullableString,
   optionalNullableUuid,
   uuidSchema,
 } from "@/lib/validations/common";
+
+const newTransactionDateSchema = dateStringSchema.refine(
+  (value) => value >= getTodayDateString(),
+  PAST_TRANSACTION_DATE_MESSAGE,
+);
 
 const incomingItemSchema = z.object({
   product_id: uuidSchema("Produk tidak valid"),
@@ -18,7 +27,7 @@ const outgoingItemSchema = z.object({
 });
 
 export const incomingTransactionSchema = z.object({
-  transaction_date: dateStringSchema,
+  transaction_date: newTransactionDateSchema,
   restock_order_id: optionalNullableUuid,
   supplier_id: optionalNullableUuid,
   notes: optionalNullableString,
@@ -27,7 +36,7 @@ export const incomingTransactionSchema = z.object({
 });
 
 export const outgoingTransactionSchema = z.object({
-  transaction_date: dateStringSchema,
+  transaction_date: newTransactionDateSchema,
   customer_name: z.string().trim().min(1, "Nama tujuan wajib diisi").max(150),
   notes: optionalNullableString,
   items: z

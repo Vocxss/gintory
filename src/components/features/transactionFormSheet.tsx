@@ -16,6 +16,10 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import {
+  getTodayDateString,
+  PAST_TRANSACTION_DATE_MESSAGE,
+} from "@/lib/utils/date";
 import { dateStringSchema } from "@/lib/validations/common";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronDownIcon } from "@hugeicons/core-free-icons";
@@ -112,7 +116,7 @@ export function TransactionFormSheet({
   onOpenChange: (open: boolean) => void;
   onSubmit: (payload: TransactionSubmitPayload) => void;
 }) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = getTodayDateString();
   const [isIncoming, setIsIncoming] = useState(true);
   const [items, setItems] = useState<Record<string, number>>({});
   const [itemError, setItemError] = useState("");
@@ -221,6 +225,12 @@ export function TransactionFormSheet({
         <form
           className="space-y-4 p-6"
           onSubmit={form.handleSubmit((values) => {
+            if (!editing && values.transaction_date < today) {
+              form.setError("transaction_date", {
+                message: PAST_TRANSACTION_DATE_MESSAGE,
+              });
+              return;
+            }
             if (!isIncoming && !values.customer_name.trim()) {
               form.setError("customer_name", {
                 message: "Nama customer/tujuan wajib diisi",
@@ -314,7 +324,12 @@ export function TransactionFormSheet({
               render={({ field, fieldState }) => (
                 <Field>
                   <FieldLabel htmlFor="trx-date">Tanggal transaksi</FieldLabel>
-                  <Input {...field} id="trx-date" type="date" />
+                  <Input
+                    {...field}
+                    id="trx-date"
+                    type="date"
+                    min={editing ? undefined : today}
+                  />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}

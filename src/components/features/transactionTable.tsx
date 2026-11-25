@@ -77,6 +77,8 @@ export function TransactionTable({
               accessRole === "staff" &&
               trx.status === "Pending" &&
               trx.created_by === currentUserId;
+            const isManagerPending =
+              accessRole === "manager" && trx.status === "Pending";
             return (
               <TableRow key={trx.id}>
                 <TableCell className="font-medium">
@@ -100,44 +102,65 @@ export function TransactionTable({
                 </TableCell>
                 <TableCell>{formatDate(trx.transaction_date)}</TableCell>
                 <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger
-                      render={
-                        <Button variant={"ghost"} size={"icon-xs"}>
-                          <HugeiconsIcon icon={MoreHorizontalIcon} />
-                        </Button>
-                      }
-                    />
-                    <DropdownMenuContent>
-                      <DropdownMenuItem className={"text-xs"}>
-                        <Link
-                          href={`/${accessRole}/transactions/${trx.id}`}
-                          className="flex items-center gap-2.5"
+                  <div className="flex items-center gap-2">
+                    {isManagerPending && (
+                      <>
+                        <Button
+                          size="xs"
+                          disabled={isPending}
+                          onClick={() => onApprove(trx.id)}
                         >
-                          <Eye /> <p>Lihat detail</p>
-                        </Link>
-                      </DropdownMenuItem>
-                      {isOwnerPending && (
-                        <>
-                          <DropdownMenuItem
-                            onClick={() => onEdit(trx)}
-                            className={"text-xs"}
+                          Setuju
+                        </Button>
+                        <Button
+                          size="xs"
+                          variant="destructive"
+                          disabled={isPending}
+                          onClick={() => onReject(trx)}
+                        >
+                          Tolak
+                        </Button>
+                      </>
+                    )}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        render={
+                          <Button variant={"ghost"} size={"icon-xs"}>
+                            <HugeiconsIcon icon={MoreHorizontalIcon} />
+                          </Button>
+                        }
+                      />
+                      <DropdownMenuContent>
+                        <DropdownMenuItem className={"text-xs"}>
+                          <Link
+                            href={`/${accessRole}/transactions/${trx.id}`}
+                            className="flex items-center gap-2.5"
                           >
-                            <HugeiconsIcon icon={PencilEdit02Icon} />
-                            <p>Edit</p>
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className={"text-xs"}
-                            variant="destructive"
-                            onClick={() => onDelete(trx)}
-                          >
-                            <HugeiconsIcon icon={TrashIcon} /> <p>Hapus</p>
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                            <Eye /> <p>Lihat detail</p>
+                          </Link>
+                        </DropdownMenuItem>
+                        {isOwnerPending && (
+                          <>
+                            <DropdownMenuItem
+                              onClick={() => onEdit(trx)}
+                              className={"text-xs"}
+                            >
+                              <HugeiconsIcon icon={PencilEdit02Icon} />
+                              <p>Edit</p>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className={"text-xs"}
+                              variant="destructive"
+                              onClick={() => onDelete(trx)}
+                            >
+                              <HugeiconsIcon icon={TrashIcon} /> <p>Hapus</p>
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </TableCell>
               </TableRow>
             );
