@@ -8,8 +8,8 @@
     "start": "next start",
     "lint": "biome check .",
     "format": "biome format --write",
-    "db:init": "node --env-file=.env -e \"const fs=require('node:fs');const {Pool}=require('pg');(async()=>{const p=new Pool({connectionString:process.env.DATABASE_URL});await p.query(fs.readFileSync('db/init.sql','utf8'));await p.end();console.log('Done!');})()\"",
-    "db:seed": "node --env-file=.env db/seed.ts"
+    "db:init": "node --env-file=.env -e \"const fs=require('node:fs');const {Pool}=require('pg');(async()=>{const p=new Pool({connectionString:process.env.DATABASE_URL});await p.query(fs.readFileSync('src/db/init.sql','utf8'));await p.end();console.log('Done!');})()\"",
+    "db:seed": "node --env-file=.env src/db/seed.ts"
   },
   "dependencies": {
     "@auth/core": "^0.41.3",
