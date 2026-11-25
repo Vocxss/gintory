@@ -1,5 +1,7 @@
-function SuppliersPage() {
-  return <div />;
-}
+"use client";
 
-export default SuppliersPage;
+import { SupplierManagement } from "@/components/features/supplierManagement";
+
+export default function SuppliersPage() {
+  return <SupplierManagement />;
+}

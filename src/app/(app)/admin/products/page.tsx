@@ -1,5 +1,7 @@
-function AdminProductsPage() {
-  return <div />;
-}
+"use client";
 
-export default AdminProductsPage;
+import { ProductManagement } from "@/components/features/productManagement";
+
+export default function AdminProductsPage() {
+  return <ProductManagement accessRole="admin" />;
+}
