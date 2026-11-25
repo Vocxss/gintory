@@ -67,20 +67,18 @@ export function RegisterForm({ ...props }) {
 
       const result = await res.json();
 
-      if (!res.ok)
+      if (!res.ok) {
         toast.add({
           title: "Register gagal",
           description: result.message,
           type: "error",
         });
-      else {
+      } else {
         toast.add({
           title: "Register berhasil",
           description: "Akun berhasil dibuat, silahkan login",
           type: "success",
         });
-        setIsLoading(false);
-
         router.push("/login");
       }
     } catch (error) {
@@ -90,6 +88,7 @@ export function RegisterForm({ ...props }) {
         description: error instanceof Error ? error.message : String(error),
         type: "error",
       });
+    } finally {
       setIsLoading(false);
     }
   };
@@ -198,6 +197,7 @@ export function RegisterForm({ ...props }) {
                       />
                       <InputGroupAddon align="inline-end">
                         <InputGroupButton
+                          type="button"
                           title="Show Password"
                           onClick={() => setShowPassword(!showPassword)}
                         >

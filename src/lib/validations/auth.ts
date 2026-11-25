@@ -2,12 +2,7 @@ import { optionalNullableString } from "@/lib/validations/common";
 import { z } from "zod";
 
 export const loginSchema = z.object({
-  email: z
-    .email("Masukkan email dengan benar")
-    .regex(/^[a-zA-Z0-9.]+@gintory\.id$/, {
-      message: "Hanya terdiri huruf, angka dan domain @gintory.id",
-    })
-    .trim(),
+  email: z.email("Masukkan email dengan benar").trim(),
   password: z.string().min(8, "Password minimal 8 karakter"),
 });
 
@@ -24,12 +19,7 @@ export const registerSchema = z.object({
 export const createUserSchema = z
   .object({
     full_name: z.string().trim().min(2, "Nama lengkap minimal 2 karakter"),
-    email: z
-      .email("Email tidak valid")
-      .regex(/^[a-zA-Z0-9.]+@gintory\.id$/, {
-        message: "Hanya terdiri huruf, angka dan domain @gintory.id",
-      })
-      .trim(),
+    email: z.email("Email tidak valid").trim(),
     password: z.string().min(8, "Password minimal 8 karakter"),
     role: z.enum(["admin", "manager", "staff", "supplier"]),
     company_name: optionalNullableString,
@@ -49,13 +39,7 @@ export const updateUserSchema = z
       .trim()
       .min(2, "Nama lengkap minimal 2 karakter")
       .optional(),
-    email: z
-      .email("Email tidak valid")
-      .regex(/^[a-zA-Z0-9.]+@gintory\.id$/, {
-        message: "Hanya terdiri huruf, angka dan domain @gintory.id",
-      })
-      .trim()
-      .optional(),
+    email: z.email("Email tidak valid").trim().optional(),
     password: z.preprocess(
       (val) => (val === "" ? undefined : val),
       z.string().min(8, "Password minimal 8 karakter").optional(),

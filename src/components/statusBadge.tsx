@@ -2,8 +2,14 @@
 
 import { Badge } from "@/components/ui/badge";
 
+const transactionTypeStyles: Record<string, string> = {
+  incoming: "bg-blue-100 text-blue-800 dark:bg-blue-800/20 dark:text-blue-300",
+  outgoing:
+    "bg-orange-100 text-secondary dark:bg-secondary/20 dark:text-orange-300",
+};
+
 const roleStyles: Record<string, string> = {
-  admin: "bg-blue-200 text-blue-800 dark:bg-blue-800 dark:text-blue-200",
+  admin: "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-200",
   manager:
     "bg-orange-100 text-secondary dark:bg-secondary dark:text-orange-300",
   staff:
@@ -56,6 +62,17 @@ export function RoleBadge({ role }: { role: string }) {
   return (
     <Badge variant="ghost" className={roleStyles[role] ?? ""}>
       {role.charAt(0).toUpperCase() + role.substring(1)}
+    </Badge>
+  );
+}
+
+export function TransactionTypeBadge({ type }: { type: string }) {
+  return (
+    <Badge
+      variant="ghost"
+      className={transactionTypeStyles[type.toLowerCase()] ?? ""}
+    >
+      {type}
     </Badge>
   );
 }

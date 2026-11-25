@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+export const uuidSchema = (message = "Format UUID tidak valid") =>
+  z.guid(message);
+
 export const imagePathSchema = z
   .string()
   .trim()
@@ -24,5 +27,5 @@ export const optionalNullableString = z.preprocess(
 
 export const optionalNullableUuid = z.preprocess(
   (val) => (val === "" ? null : val),
-  z.uuid("Format UUID tidak valid").nullable().optional(),
+  uuidSchema("Format UUID tidak valid").nullable().optional(),
 );

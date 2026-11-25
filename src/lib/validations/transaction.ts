@@ -4,15 +4,16 @@ import {
   imagePathSchema,
   optionalNullableString,
   optionalNullableUuid,
+  uuidSchema,
 } from "@/lib/validations/common";
 
 const incomingItemSchema = z.object({
-  product_id: z.uuid("Produk tidak valid"),
+  product_id: uuidSchema("Produk tidak valid"),
   quantity: z.coerce.number().int().min(0, "Kuantitas tidak boleh negatif"),
 });
 
 const outgoingItemSchema = z.object({
-  product_id: z.uuid("Produk tidak valid"),
+  product_id: uuidSchema("Produk tidak valid"),
   quantity: z.coerce.number().int().min(1, "Kuantitas minimal 1"),
 });
 

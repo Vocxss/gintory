@@ -1,29 +1,29 @@
 "use client";
-import Image from "next/image";
-import { useState } from "react";
 import { LoginForm } from "@/components/loginForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scrollArea";
+import Image from "next/image";
+import { useState } from "react";
 
 const demoAccounts = [
   {
-    email: "gibranxgaming@gmail.com",
+    email: "admin_gibran@gintory.id",
     password: "gibran19",
     role: "admin",
   },
   {
-    email: "manager@gintory.local",
+    email: "manager_bahlulu@gintory.id",
     password: "bahlulu02",
     role: "manager",
   },
   {
-    email: "staff@gintory.local",
+    email: "staff_bahlili@gintory.id",
     password: "bahlili02",
     role: "staff",
   },
   {
-    email: "supply@sawit.id",
+    email: "supply_cabowo@fantech.id",
     password: "hidup_sawit",
     role: "supplier",
   },

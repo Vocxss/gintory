@@ -4,11 +4,12 @@ import {
   imagePathSchema,
   optionalNullableString,
   optionalNullableUuid,
+  uuidSchema,
 } from "@/lib/validations/common";
 
 export const restockSchema = z
   .object({
-    supplier_id: z.uuid("Supplier tidak valid"),
+    supplier_id: uuidSchema("Supplier tidak valid"),
     order_date: dateStringSchema,
     expected_delivery_date: dateStringSchema,
     notes: optionalNullableString,
@@ -16,7 +17,7 @@ export const restockSchema = z
     items: z
       .array(
         z.object({
-          product_id: z.uuid("Produk tidak valid"),
+          product_id: uuidSchema("Produk tidak valid"),
           quantity: z.coerce.number().int().min(1, "Kuantitas minimal 1"),
         }),
       )
